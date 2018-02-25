@@ -11,5 +11,5 @@ local.properties
 gradle.properties
 /.idea/
 .DS_Store
-.orig
+*.orig
 dbro.pro.keystore
