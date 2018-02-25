@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="jb.fastreader.activities.MainActivity">
+
+    <item
+        android:id="@+id/action_config"
+        android:icon="?attr/settings_icon"
+        android:title="@string/title_activity_config"
+        app:showAsAction="ifRoom" />
+
+</menu>

@@ -1,0 +1,15 @@
+RELEASING.md
+build
+app/build
+*.apk
+*.epub
+*.iml
+*.keystore
+SECRETS.java
+.gradle
+local.properties
+gradle.properties
+/.idea/
+.DS_Store
+
+dbro.pro.keystore
