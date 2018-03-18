@@ -30,20 +30,17 @@ public class HtmlPage implements ISpritzerMedia
     /**
      * Creates an {@link HtmlPage} from a url.
      * Returns immediately with an {@link HtmlPage}
-     * that is not yet initialized. Pass a {@link HtmlPage.HtmlPageParsedCallback}
+     * that is not yet initialized. Pass a {@link IHtmlPageParsedCallback}
      * to be notified when page parsing is complete, and the returned HtmlPage is populated.
      *
+     * @param context Application context
      * @param url The http url.
      * @param cb  A callback to be invoked when the HtmlPage is parsed
+     *
      * @return An HtmlPage with null JResult;
      */
-    public static HtmlPage fromUri(final Context context, String url, final HtmlPageParsedCallback cb)
+    public static HtmlPage fromUri(final Context context, String url, final IHtmlPageParsedCallback cb)
     {
-        // Seems to be a bug in Ion setting trust manager
-        // When that's resolved, go back to Ion request
-//        if (!sSetupTrustManager) {
-//            sSetupTrustManager = TrustManager.setupIonTrustManager(context);
-//        }
         final HtmlPage page = new HtmlPage(null);
         String encodedUrlToParse = Uri.encode(url);
         String requestUrl = String.format("http://api.diffbot.com/v2/article?url=%s&token=%s", encodedUrlToParse, "2efef432c72b5a923408e04353c39a7c");
@@ -84,10 +81,6 @@ public class HtmlPage implements ISpritzerMedia
         return page;
     }
 
-    public interface HtmlPageParsedCallback
-    {
-        void onPageParsed(HtmlPage htmlPage);
-    }
 
     /**
      * Builds an HtmlPage from a {@link com.google.gson.JsonObject} in diffbot format.
@@ -103,33 +96,34 @@ public class HtmlPage implements ISpritzerMedia
         }
     }
 
-    private void initFromJson(JsonObject json)
+    // Diffbot json format: http://www.diffbot.com/products/automatic/
+    private void initFromJson(JsonObject parsedContent)
     {
-        // Diffbot json format: http://www.diffbot.com/products/automatic/
-        if (json == null)
+        if (parsedContent == null)
         {
             Log.e(TAG, "Error parsing page");
             return;
         }
 
-        if (json.has("title"))
+        if (parsedContent.has("title"))
         {
-            this.pageTitle = json.get("title").getAsString();
+            this.pageTitle = parsedContent.get("title").getAsString();
         }
 
-        if (json.has("url"))
+        if (parsedContent.has("url"))
         {
-            this.url = json.get("url").getAsString();
+            this.url = parsedContent.get("url").getAsString();
         }
 
-        if (json.has("text"))
+        if (parsedContent.has("text"))
         {
-            this.pageContent = json.get("text").getAsString();
+            this.pageContent = parsedContent.get("text").getAsString();
         }
 
         // Sanitize content
         String articleContent = Html.fromHtml(this.pageContent).toString();
         this.pageContent = articleContent.replaceAll("\\n+", " (NewParagraph) ").replaceAll("(?s)<!--.*?-->", "");
+
         Log.v(TAG, "Finished replacing article content");
     }
 

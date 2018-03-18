@@ -30,14 +30,13 @@ public class SpritzerCore
     protected static final int MSG_PRINT_WORD = 1;
     protected static final int MSG_SET_ENABLED = 2;
     protected static final int CHARS_LEFT_OF_PIVOT = 3;
-
+    protected final Object mSpritzThreadStartedSync = new Object();
     protected int mMaxWordLength = 13;
     protected String[] wordArray;                  // A parsed list of words parsed from {@link #setText(String input)}
     protected ArrayList<String> mDisplayWordList;  // The queue of words from wordArray yet to be displayed
     protected TextView textViewTarget;
     protected int wpm;
     protected Handler spritzHandler;
-    protected final Object mSpritzThreadStartedSync = new Object();
     protected boolean isPlaying;
     protected boolean mPlayingRequested;
     protected boolean mSpritzThreadStarted;
@@ -65,15 +64,9 @@ public class SpritzerCore
     public void setTextAndStart(String input, boolean fireFinishEvent)
     {
         Log.i(TAG, "setTextAndStart1");
-        this.setTextAndStart(input, null, fireFinishEvent);
-    }
-
-    public void setTextAndStart(String input, SpritzerCallback cb, boolean fireFinishEvent)
-    {
-        Log.i(TAG, "setTextAndStart2");
         this.pause();
         this.setText(input);
-        this.start(cb, fireFinishEvent);
+        this.start(null, fireFinishEvent);
     }
 
     public void pause()
@@ -200,7 +193,7 @@ public class SpritzerCore
      * @param cb callback to be notified when SpritzerCore finished.
      *           Called from background thread.
      */
-    public void start(SpritzerCallback cb, boolean fireFinishEvent)
+    public void start(ISpritzerCallback cb, boolean fireFinishEvent)
     {
         Log.i(TAG, "start2");
         if (this.isPlaying || this.wordArray == null)
@@ -378,7 +371,7 @@ public class SpritzerCore
     /**
      * Begin the background timer thread
      */
-    private void startTimerThread(final SpritzerCallback cb, final boolean fireFinishEvent) {
+    private void startTimerThread(final ISpritzerCallback cb, final boolean fireFinishEvent) {
         synchronized (mSpritzThreadStartedSync) {
             if (!mSpritzThreadStarted) {
                 new Thread(new Runnable() {
@@ -401,10 +394,12 @@ public class SpritzerCore
                                     Log.i(TAG, "Word list completely displayed after processNextWord. Pausing");
 
                                     mPlayingRequested = false;
-                                    if (bus != null && fireFinishEvent) {
-                                        bus.post(new SpritzFinishedEvent());
-                                    }
-                                    if (cb != null) {
+//                                    if (bus != null && fireFinishEvent) {
+//                                        bus.post(new SpritzFinishedEvent());
+//                                    }
+                                    if (cb != null)
+                                    {
+                                        Log.i(TAG, "Calling callback");
                                         cb.onSpritzerFinished();
                                     }
                                 }
@@ -441,6 +436,38 @@ public class SpritzerCore
         return mCurWordIdx >= mDisplayWordList.size() - 1;
     }
 
+    public boolean isPlaying()
+    {
+        return this.isPlaying;
+    }
+
+    /**
+     * Pass a Bus to receive events on, such as
+     * when the display of a given String is finished
+     *
+     * @param bus
+     */
+    public void setEventBus(Bus bus)
+    {
+        this.bus = bus;
+    }
+
+    public void setLoopingPlayback(boolean doLoop)
+    {
+        mLoopingPlayback = doLoop;
+    }
+
+    public void setMaxWordLength(int maxWordLength)
+    {
+        this.mMaxWordLength = maxWordLength;
+    }
+
+    public void setWpm(int wpm)
+    {
+        this.wpm = wpm;
+    }
+
+
     /**
      * A Handler intended for creation on the Main thread.
      * Messages are intended to be passed from a background
@@ -476,36 +503,5 @@ public class SpritzerCore
             }
         }
 
-    }
-    public interface SpritzerCallback
-    {
-        void onSpritzerFinished();
-    }
-
-    public boolean isPlaying()
-    {
-        return this.isPlaying;
-    }
-    /**
-     * Pass a Bus to receive events on, such as
-     * when the display of a given String is finished
-     *
-     * @param bus
-     */
-    public void setEventBus(Bus bus)
-    {
-        this.bus = bus;
-    }
-    public void setLoopingPlayback(boolean doLoop)
-    {
-        mLoopingPlayback = doLoop;
-    }
-    public void setMaxWordLength(int maxWordLength)
-    {
-        this.mMaxWordLength = maxWordLength;
-    }
-    public void setWpm(int wpm)
-    {
-        this.wpm = wpm;
     }
 }

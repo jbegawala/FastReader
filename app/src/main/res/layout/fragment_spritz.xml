@@ -8,7 +8,7 @@
     tools:context="jb.fastreader.fragments.SpritzFragment">
 
     <TextView
-        android:id="@+id/url"
+        android:id="@+id/contentTitle"
         style="@style/SubduedTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,14 +23,14 @@
         android:textSize="@dimen/spritzer_title_text_size" />
 
     <TextView
-        android:id="@+id/author"
+        android:id="@+id/contentSubtitle"
         style="@style/UltraSubduedTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:layout_alignLeft="@id/url"
-        android:layout_below="@id/url"
+        android:layout_alignLeft="@id/contentTitle"
+        android:layout_below="@id/contentTitle"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textSize="@dimen/spritzer_author_text_size" />
@@ -72,7 +72,7 @@
         android:typeface="monospace" />
 
     <ProgressBar
-        android:id="@+id/progress"
+        android:id="@+id/statusVisual"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -83,11 +83,11 @@
         android:visibility="invisible" />
 
     <TextView
-        android:id="@+id/chapter"
+        android:id="@+id/statusText"
         style="@style/SubduedTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/progress"
+        android:layout_above="@id/statusVisual"
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="@dimen/chapter_margin"
         android:layout_marginLeft="@dimen/chapter_margin"

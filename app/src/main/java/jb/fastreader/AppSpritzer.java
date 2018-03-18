@@ -1,9 +1,7 @@
 package jb.fastreader;
 
-import android.annotation.SuppressLint;
 import android.content.UriPermission;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,11 +10,11 @@ import com.squareup.otto.Bus;
 
 import java.util.List;
 
-import jb.fastreader.events.HttpUrlParsedEvent;
+import jb.fastreader.events.DummyParsedEvent;
 import jb.fastreader.events.NextChapterEvent;
-import jb.fastreader.formats.HtmlPage;
-import jb.fastreader.formats.ISpritzerMedia;
+import jb.fastreader.formats.*;
 import jb.spritzer.SpritzerCore;
+import jb.spritzer.ISpritzerCallback;
 
 /**
  * A higher-level {@link SpritzerCore} that operates
@@ -29,8 +27,8 @@ public class AppSpritzer extends SpritzerCore
     public static final int SPECIAL_MESSAGE_WPM = 100;
     public static final String TAG = AppSpritzer.class.getSimpleName();
 
-    private int mChapter;
-    private ISpritzerMedia mMedia;
+    private int chapter;
+    private ISpritzerMedia media;
     private Uri mMediaUri;
     private boolean mSpritzingSpecialMessage;
 
@@ -61,15 +59,21 @@ public class AppSpritzer extends SpritzerCore
         {
             mMediaUri = uri;
             // TODO why can't this just instantiate object? does callback not work in that context?
-            mMedia = HtmlPage.fromUri(textViewTarget.getContext().getApplicationContext(), uri.toString(), new HtmlPage.HtmlPageParsedCallback() {
-                @Override
-                public void onPageParsed(HtmlPage result) {
-                    restoreState(false);
-                    if (bus != null) {
-                        bus.post(new HttpUrlParsedEvent(result));
-                    }
-                }
-            });
+//            media = HtmlPage.fromUri(textViewTarget.getContext().getApplicationContext(), uri.toString(), new IHtmlPageParsedCallback() {
+//                @Override
+//                public void onPageParsed(HtmlPage result) {
+//                    restoreState(false);
+//                    if (bus != null) {
+//                        bus.post(new HttpUrlParsedEvent(result));
+//                    }
+//                }
+//            });
+            this.media = new DummyHtmlPage();
+            restoreState(false);
+            if ( bus != null )
+            {
+                bus.post(new DummyParsedEvent((DummyHtmlPage) this.media));
+            }
         }
         else
         {
@@ -82,42 +86,51 @@ public class AppSpritzer extends SpritzerCore
     }
 
     public ISpritzerMedia getMedia() {
-        return mMedia;
+        return media;
     }
 
+    public int getCurrentWordNumber()
+    {
+        return 10;
+    }
+
+    public int getWordCount()
+    {
+        return 30;
+    }
     public int getCurrentChapter() {
-        return mChapter;
+        return chapter;
     }
 
     public int getMaxChapter() {
-        return (mMedia == null) ? 0 : mMedia.countChapters() - 1;
+        return (media == null) ? 0 : media.countChapters() - 1;
     }
 
     public boolean isMediaSelected() {
-        return mMedia != null;
+        return media != null;
     }
 
     protected void processNextWord() throws InterruptedException {
         super.processNextWord();
-        if (this.isPlaying && mPlayingRequested && isWordListComplete() && mChapter < getMaxChapter()) {
+        if (this.isPlaying && mPlayingRequested && isWordListComplete() && chapter < getMaxChapter()) {
             // If we are Spritzing a special message, don't automatically proceed to the next chapter
             if (mSpritzingSpecialMessage) {
                 mSpritzingSpecialMessage = false;
                 return;
             }
-            while (isWordListComplete() && mChapter < getMaxChapter()) {
+            while (isWordListComplete() && chapter < getMaxChapter()) {
                 printNextChapter();
                 if (bus != null) {
-                    bus.post(new NextChapterEvent(mChapter));
+                    bus.post(new NextChapterEvent(chapter));
                 }
             }
         }
     }
 
     private void printNextChapter() {
-        setText(loadCleanStringFromChapter(mChapter++));
+        setText(loadCleanStringFromChapter(chapter++));
         saveState();
-        Log.i(TAG, "starting next chapter: " + mChapter + " length " + mDisplayWordList.size());
+        Log.i(TAG, "starting next chapter: " + chapter + " length " + mDisplayWordList.size());
     }
 
     /**
@@ -147,20 +160,19 @@ public class AppSpritzer extends SpritzerCore
      * @return the sanitized chapter text.
      */
     private String loadCleanStringFromChapter(int chapter) {
-        return mMedia.loadChapter(chapter);
+        return media.loadChapter(chapter);
     }
 
     public void saveState()
     {
         // no point in saving article state, is there?
-        if (this.mMedia != null)
+        if (this.media != null)
         {
-            Log.i(TAG, "Saving state at chapter " + mChapter + " word: " + mCurWordIdx);
-            Preferences.saveState(textViewTarget.getContext(), mChapter, mMediaUri.toString(), mCurWordIdx, mMedia.getTitle(), wpm);
+            Log.i(TAG, "Saving state at chapter " + chapter + " word: " + mCurWordIdx);
+            Preferences.saveState(textViewTarget.getContext(), chapter, mMediaUri.toString(), mCurWordIdx, media.getTitle(), wpm);
         }
     }
 
-    @SuppressLint("NewApi")
     private void restoreState(boolean openLastMediaUri) {
         final Preferences.SpritzState state = Preferences.getState(textViewTarget.getContext());
         String content = "";
@@ -168,7 +180,7 @@ public class AppSpritzer extends SpritzerCore
             // Open the last selected media
             if (state.hasUri()) {
                 Uri mediaUri = state.getUri();
-                if (Build.VERSION.SDK_INT >= 19 && !isHttpUri(mediaUri)) {
+                if (!isHttpUri(mediaUri)) {
                     boolean uriPermissionPersisted = false;
                     List<UriPermission> uriPermissions = textViewTarget.getContext().getContentResolver().getPersistedUriPermissions();
                     for (UriPermission permission : uriPermissions) {
@@ -187,21 +199,22 @@ public class AppSpritzer extends SpritzerCore
                     openMedia(mediaUri);
                 }
             }
-        } else if (state.hasTitle() && mMedia.getTitle().compareTo(state.getTitle()) == 0) {
-            // Resume media at previous point
-            mChapter = state.getChapter();
-            content = loadCleanStringFromNextNonEmptyChapter(mChapter);
-            setWpm(state.getWpm());
-            mCurWordIdx = state.getWordIdx();
-            Log.i(TAG, "Resuming " + mMedia.getTitle() + " from chapter " + mChapter + " word " + mCurWordIdx);
+//        } else if (state.hasTitle() && media.getTitle().compareTo(state.getTitle()) == 0) {
+//            // Resume media at previous point
+//            chapter = state.getChapter();
+//            content = this.loadCleanStringFromNextNonEmptyChapter(chapter);
+//            setWpm(state.getWpm());
+//            mCurWordIdx = state.getWordIdx();
+//            Log.i(TAG, "Resuming " + media.getTitle() + " from chapter " + chapter + " word " + mCurWordIdx);
         } else {
             // Begin content anew
-            mChapter = 0;
+            chapter = 0;
             mCurWordIdx = 0;
             setWpm(state.getWpm());
             Log.i(TAG, "Loaded wpm at: " + state.getWpm());
-            content = loadCleanStringFromNextNonEmptyChapter(mChapter);
+            content = this.loadCleanStringFromNextNonEmptyChapter(chapter);
         }
+
         final String finalContent = content;
         if (!this.isPlaying && finalContent.length() > 0) {
             setWpm(SPECIAL_MESSAGE_WPM);
@@ -209,7 +222,11 @@ public class AppSpritzer extends SpritzerCore
             // automatically proceed to the next chapter
             mSpritzingSpecialMessage = true;
             textViewTarget.setEnabled(false);
-            setTextAndStart(textViewTarget.getContext().getString(R.string.touch_to_start), new SpritzerCallback() {
+
+            //this.pause();
+            this.setText(textViewTarget.getContext().getString(R.string.touch_to_start));
+
+            this.start( new ISpritzerCallback() {
                 @Override
                 public void onSpritzerFinished() {
                     setText(finalContent);

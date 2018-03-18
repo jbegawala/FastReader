@@ -67,7 +67,7 @@ public class ArticleAdapter extends ParseQueryAdapter<ParseObject> {
         TextView handle = (TextView) convertView.findViewById(R.id.title);
         handle.setText(object.getString("title"));
 
-        TextView text = (TextView) convertView.findViewById(R.id.url);
+        TextView text = (TextView) convertView.findViewById(R.id.contentTitle);
         convertView.setTag(object.getString("url"));
         try {
             text.setText(new URL(object.getString("url")).getHost());

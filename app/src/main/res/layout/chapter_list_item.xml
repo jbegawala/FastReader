@@ -9,7 +9,7 @@
     android:layout_marginBottom="8dp">
 
     <TextView
-        android:id="@+id/url"
+        android:id="@+id/contentTitle"
         android:textSize="18sp"
         android:padding="8dp"
         android:layout_margin="8dp"

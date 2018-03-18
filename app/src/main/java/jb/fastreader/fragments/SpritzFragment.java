@@ -49,11 +49,13 @@ public class SpritzFragment extends Fragment
     private static AppSpritzer spritzerApp;
     static float initHeight;
 
-    private TextView authorView;
-    private TextView titleView;
-    private TextView chapterView;
+    // Meta UI components
+    private TextView contentTitle;
+    private TextView contentSubtitle;
+    private TextView statusText;
+    private ProgressBar statusVisual;
+
     private TextView spritzHistoryView;
-    private ProgressBar progressBar;
     private SpritzerTextView spritzView;
     private Bus bus;
     private SpritzFragmentHandler mHandler;
@@ -62,6 +64,39 @@ public class SpritzFragment extends Fragment
     {
         // TODO should i initialize sprtizerApp?
 
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        // Inflate the layout for this fragment
+        View root = inflater.inflate(R.layout.fragment_spritz, container, false);
+
+        this.contentTitle = ((TextView) root.findViewById(R.id.contentTitle));
+        this.contentSubtitle = ((TextView) root.findViewById(R.id.contentSubtitle));
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+        {
+            this.contentSubtitle.setVisibility(View.GONE);
+        }
+
+        this.statusText = ((TextView) root.findViewById(R.id.statusText));
+        this.statusText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(spritzerApp.getMaxChapter() > 1) {
+                    bus.post(new ChapterSelectRequested());
+                }
+            }
+        });
+        this.statusVisual = ((ProgressBar) root.findViewById(R.id.statusVisual));
+
+        this.spritzHistoryView = (TextView) root.findViewById(R.id.spritzHistory);
+        this.spritzView = (SpritzerTextView) root.findViewById(R.id.spritzText);
+        //spritzView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
+        //spritzHistoryView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
+        this.setupViews(this.spritzView, this.spritzHistoryView);
+
+        return root;
     }
 
     public void feedMediaUriToSpritzer(Uri mediaUri)
@@ -85,72 +120,47 @@ public class SpritzFragment extends Fragment
 //        Log.i(TAG, " Set WPM to: " + wpm);
         int wpm = Preferences.DEFAULT_APP_WPM;
         spritzerApp.setWpm(wpm);
-//        Why is this commented out?
-        if (AppSpritzer.isHttpUri(mediaUri))
-        {
-            spritzerApp.setTextAndStart(getString(R.string.loading), false);
-            this.progressBar.setIndeterminate(true);
-        }
+//        Commenting out because synchronous call
+//        if (AppSpritzer.isHttpUri(mediaUri))
+//        {
+//            spritzerApp.setTextAndStart(getString(R.string.loading), false);
+//            this.statusVisual.setIndeterminate(true);
+//        }
     }
 
-    /**
-     * Update the UI related to Book Title, Author,
-     * and current progress. Everything but the {@link SpritzerTextView}
-     */
-    public void updateMetaUi() {
-        if (!spritzerApp.isMediaSelected()) {
-            return;
-        }
 
-        ISpritzerMedia book = spritzerApp.getMedia();
+    private void startSpritzer()
+    {
+        spritzerApp.start(true);
+        this.hideMetaInfo();
+        this.hideActionBar();
+    }
 
-        authorView.setText(book.getAuthor());
-        titleView.setText(book.getTitle());
-
-        int curChapter = spritzerApp.getCurrentChapter();
-
-        String chapterText = spritzerApp.getMedia().getChapterTitle(curChapter);
-
-        int startSpan = chapterText.length();
-        chapterText = String.format("%d of %d words (%d%%)", 10, 20, 50);
-        int endSpan = chapterText.length();
-        Spannable spanRange = new SpannableString(chapterText);
-        TextAppearanceSpan tas = new TextAppearanceSpan(chapterView.getContext(), R.style.MinutesToGo);
-        spanRange.setSpan(tas, startSpan, endSpan, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        chapterView.setText(spanRange);
-
-        final int progressScale = 10;
-        int progress;
-        // If the spritzer is showing a special message
-        // don't factor current word queue completeness
-        // into progress.
-        if (spritzerApp.isSpritzingSpecialMessage()) {
-            progress = curChapter;
-        } else {
-            progress = curChapter * progressScale + ((int) (progressScale * (spritzerApp.getQueueCompleteness())));
-        }
-        progressBar.setMax((spritzerApp.getMaxChapter() + 1) * progressScale);
-
-        progressBar.setProgress(progress);
+    private void pauseSpritzer()
+    {
+        spritzerApp.pause();
+        this.updateMetaUI();
+        this.showMetaInfo();
+        this.showActionBar();
     }
 
     private void hideMetaInfo()
     {
-        this.authorView.setVisibility(View.INVISIBLE);
-        this.titleView.setVisibility(View.INVISIBLE);
-        this.chapterView.setVisibility(View.INVISIBLE);
-        this.progressBar.setVisibility(View.INVISIBLE);
+        this.contentTitle.setVisibility(View.INVISIBLE);
+        this.contentSubtitle.setVisibility(View.INVISIBLE);
+        this.statusText.setVisibility(View.INVISIBLE);
+        this.statusVisual.setVisibility(View.INVISIBLE);
     }
 
     private void showMetaInfo()
     {
+        this.contentTitle.setVisibility(View.VISIBLE);
         if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE)
         {
-            this.authorView.setVisibility(View.VISIBLE);
+            this.contentSubtitle.setVisibility(View.VISIBLE);
         }
-        this.titleView.setVisibility(View.VISIBLE);
-        this.chapterView.setVisibility(View.VISIBLE);
-        this.progressBar.setVisibility(View.VISIBLE);
+        this.statusText.setVisibility(View.VISIBLE);
+        this.statusVisual.setVisibility(View.VISIBLE);
     }
 
     private void hideActionBar()
@@ -170,48 +180,32 @@ public class SpritzFragment extends Fragment
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public void updateMetaUI()
     {
-        // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.fragment_spritz, container, false);
-        authorView = ((TextView) root.findViewById(R.id.author));
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+        if (!spritzerApp.isMediaSelected())
         {
-            authorView.setVisibility(View.GONE);
+            return;
         }
-        titleView = ((TextView) root.findViewById(R.id.url));
-        chapterView = ((TextView) root.findViewById(R.id.chapter));
-        chapterView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(spritzerApp.getMaxChapter() > 1) {
-                    bus.post(new ChapterSelectRequested());
-                }
-            }
-        });
+        ISpritzerMedia content = spritzerApp.getMedia();
 
-        this.spritzHistoryView = (TextView) root.findViewById(R.id.spritzHistory);
-        this.progressBar = ((ProgressBar) root.findViewById(R.id.progress));
-        this.spritzView = (SpritzerTextView) root.findViewById(R.id.spritzText);
-        //spritzView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
-        //spritzHistoryView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
-        this.setupViews(spritzView, spritzHistoryView);
-        return root;
-    }
+        this.contentTitle.setText(content.getTitle());
+        this.contentSubtitle.setText(content.getAuthor());
 
-    private void pauseSpritzer() {
-        spritzerApp.pause();
-        this.updateMetaUi();
-        this.showMetaInfo();
-        this.showActionBar();
-    }
-
-    private void startSpritzer() {
-        spritzerApp.start(true);
-        this.hideMetaInfo();
-        this.hideActionBar();
+        int progress = 0;
+        String status = "";
+        //if (!spritzerApp.isSpritzingSpecialMessage())
+        //{
+            int currentWord = spritzerApp.getCurrentWordNumber();
+            int wordCount = spritzerApp.getWordCount();
+            progress = currentWord * 100 / wordCount;
+            status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
+        //}
+        Spannable spanRange = new SpannableString(status);
+        TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
+        spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        this.statusText.setText(spanRange);
+        this.statusVisual.setMax(100);
+        this.statusVisual.setProgress(progress);
     }
 
     /**
@@ -234,10 +228,12 @@ public class SpritzFragment extends Fragment
             private float lastTouchY;
             private float firstTouchY;
             private final float fullOpacityHeight = 300;
+
             /** The distance between ACTION_DOWN and ACTION_UP, above which should
              * be interpreted as a drag, below which a click.
              */
             private final float movementForDragThreshold = 20;
+
             /** The time between ACTION_DOWN and ACTION_MOVE, above which should
              * be interpreted as a drag, and the spritzer paused
              */
@@ -247,27 +243,46 @@ public class SpritzFragment extends Fragment
             private boolean mAnimatingBack = false;
 
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (params == null) params = transformTarget.getLayoutParams();
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                if (params == null)
+                {
+                    params = transformTarget.getLayoutParams();
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN)
+                {
                     if (spritzerApp.isPlaying())
+                    {
                         spritzerApp.pause();
+                    }
                     else
+                    {
                         spritzerApp.start(true);
-//                    Log.i("TOUCH", "Down");
+                    }
+                    Log.i("SpritzFragmentTOUCH", "Down");
                     int coords[] = new int[2];
                     transformTarget.getLocationOnScreen(coords);
                     lastTouchY = firstTouchY = event.getRawY();
                 }
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (spritzerApp.isPlaying() && (event.getEventTime() - event.getDownTime() > timeForPauseThreshold)) spritzerApp.pause();
-                    if (!mSetText) {
+
+                else if (event.getAction() == MotionEvent.ACTION_MOVE)
+                {
+                    if (spritzerApp.isPlaying() && (event.getEventTime() - event.getDownTime() > timeForPauseThreshold))
+                    {
+                        spritzerApp.pause();
+                    }
+
+                    if (!mSetText)
+                    {
                         spritzHistoryView.setText(spritzerApp.getHistoryString(400));
                         mSetText = true;
                     }
                     float newHeight = event.getRawY() - lastTouchY + transformTarget.getHeight();
 //                    Log.i("MOVE", "touch-y: " + event.getRawY() + " lastTouch: " + lastTouchY + " height: " + transformTarget.getHeight());
-                    if (newHeight > initHeight) {
+
+                    if (newHeight > initHeight)
+                    {
 //                        Log.i("TOUCH", "setting height " + params.height);
                         params.height = (int) newHeight;
                         if (newHeight >= fullOpacityHeight) {
@@ -279,10 +294,13 @@ public class SpritzFragment extends Fragment
                         }
                         transformTarget.requestLayout();
                     }
+
                     lastTouchY = event.getRawY();
                 }
-                if (event.getAction() == MotionEvent.ACTION_UP && !mAnimatingBack) {
-                    if (event.getRawY() - firstTouchY < movementForDragThreshold) {
+
+                else if (event.getAction() == MotionEvent.ACTION_UP && !mAnimatingBack) {
+                    if (event.getRawY() - firstTouchY < movementForDragThreshold)
+                    {
                         // This is a click, not a drag
                         // show/hide meta ui on release
                         if (!spritzerApp.isPlaying()) pauseSpritzer();
@@ -295,6 +313,7 @@ public class SpritzFragment extends Fragment
                     invokeSpring(transformTarget);
 
                 }
+
                 return true;
             }
 
@@ -318,7 +337,8 @@ public class SpritzFragment extends Fragment
                         //Log.i("SPRING", String.valueOf(value));
                         // 0 - initHeight
                         // 1 - peakHeight
-                        if (scale < 0.05) {
+                        if (scale < 0.05)
+                        {
                             //Log.i("SPRING", "finished");
                             spritzHistoryView.setText("");
                             mSetText = false;
@@ -326,11 +346,16 @@ public class SpritzFragment extends Fragment
                             transformTarget.setAlpha(0);
                             mAnimatingBack = false;
                             startSpritzer();
-                        } else if (mAnimatingBack) {
+                        }
+                        else if (mAnimatingBack)
+                        {
                             params.height = (int) ((scale * (peakHeight - initHeight)) + initHeight);
-                            if (transformTarget.getHeight() >= fullOpacityHeight * 2) {
+                            if (transformTarget.getHeight() >= fullOpacityHeight * 2)
+                            {
                                 transformTarget.setAlpha(1f);
-                            } else {
+                            }
+                            else
+                            {
                                 //fullOpacityHeight*2 = full
                                 //fullOpacityHeight = empty
                                 transformTarget.setAlpha(Math.max(0, fullOpacityHeight - transformTarget.getHeight() * 1.1f));
@@ -369,7 +394,7 @@ public class SpritzFragment extends Fragment
                 mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SPRITZ_TEXT, getString(R.string.select_epub)), 1500);
             } else {
                 // AppSpritzer loaded the last book being read
-                updateMetaUi();
+                updateMetaUI();
                 showMetaInfo();
             }
         }
@@ -378,7 +403,7 @@ public class SpritzFragment extends Fragment
             spritzerApp.setEventBus(bus);
             spritzView.setSpritzer(spritzerApp);
             if (!spritzerApp.isPlaying()) {
-                updateMetaUi();
+                updateMetaUI();
                 showMetaInfo();
             } else {
                 // If the spritzer is currently playing, be sure to hide the ActionBar
@@ -436,7 +461,7 @@ public class SpritzFragment extends Fragment
                 case MSG_HIDE_CHAPTER_LABEL:
                     if (getActivity() != null) {
                         if (spritzerApp != null && spritzerApp.isPlaying()) {
-                            spritzer.chapterView.setVisibility(View.INVISIBLE);
+                            spritzer.statusText.setVisibility(View.INVISIBLE);
                         }
                     }
                     break;

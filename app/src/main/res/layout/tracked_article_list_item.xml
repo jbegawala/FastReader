@@ -32,7 +32,7 @@
         android:textAppearance="@android:style/TextAppearance.Large" />
 
     <TextView
-        android:id="@+id/url"
+        android:id="@+id/contentTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/title"

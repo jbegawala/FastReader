@@ -10,7 +10,7 @@
         android:id="@+id/spritzText"
         android:layout_width="@dimen/spritzer_text_view_width"
         android:layout_height="wrap_content"
-        android:layout_above="@id/chapter"
+        android:layout_above="@id/statusText"
         android:clickable="true"
         android:focusableInTouchMode="true"
         android:gravity="left"
@@ -19,7 +19,7 @@
         android:typeface="monospace" />
 
     <TextView
-        android:id="@+id/url"
+        android:id="@+id/contentTitle"
         style="@style/SubduedTextStyle"
         android:layout_width="@dimen/spritzer_title_width"
         android:layout_height="wrap_content"
@@ -34,12 +34,12 @@
         android:textSize="@dimen/spritzer_title_text_size" />
 
     <TextView
-        android:id="@+id/author"
+        android:id="@+id/contentSubtitle"
         style="@style/SubduedTextStyle"
         android:layout_width="@dimen/spritzer_author_width"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/url"
-        android:layout_below="@id/url"
+        android:layout_alignLeft="@id/contentTitle"
+        android:layout_below="@id/contentTitle"
         android:ellipsize="marquee"
         android:fontFamily="sans-serif-condensed"
         android:singleLine="true"
@@ -52,13 +52,13 @@
         android:layout_height="wrap_content"
         android:gravity="bottom|left"
         android:layout_above="@id/spritzText"
-        android:layout_below="@id/author"
+        android:layout_below="@id/contentSubtitle"
         android:typeface="monospace"
         android:maxLines="@integer/spritz_history_line_count"
         android:textSize="@dimen/spritzer_history_text_size" />
 
     <ProgressBar
-        android:id="@+id/progress"
+        android:id="@+id/statusVisual"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -69,11 +69,11 @@
         android:visibility="invisible" />
 
     <TextView
-        android:id="@+id/chapter"
+        android:id="@+id/statusText"
         style="@style/SubduedTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/progress"
+        android:layout_above="@id/statusVisual"
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="@dimen/chapter_margin"
         android:layout_marginLeft="@dimen/chapter_margin"
