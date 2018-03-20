@@ -26,6 +26,7 @@ import jb.spritzer.events.SpritzProgressEvent;
 public class SpritzerCore
 {
     protected static final String TAG = "SpritzerCore";
+    private static final int DEFAULTWPM = 600;
 
     protected static final int MSG_PRINT_WORD = 1;
     protected static final int MSG_SET_ENABLED = 2;
@@ -51,7 +52,7 @@ public class SpritzerCore
         // used to be its own protected method
         this.mCurWordIdx = 0;
         this.mDisplayWordList = new ArrayList<>();
-        this.wpm = 600;
+        this.wpm = DEFAULTWPM;
         this.isPlaying = false;
         this.mPlayingRequested = false;
         this.mSpritzThreadStarted = false;
@@ -64,14 +65,14 @@ public class SpritzerCore
     public void setTextAndStart(String input, boolean fireFinishEvent)
     {
         Log.i(TAG, "setTextAndStart1");
-        this.pause();
+        this.pause("setTextAndStart");
         this.setText(input);
         this.start(null, fireFinishEvent);
     }
 
-    public void pause()
+    public void pause(String info)
     {
-        Log.i(TAG, "pause: Pausing spritzer");
+        Log.i(TAG, "pause: Pausing spritzer from " + info);
 
         mPlayingRequested = false;
         synchronized (mSpritzThreadStartedSync) {
@@ -204,7 +205,7 @@ public class SpritzerCore
         Log.i(TAG, "Start called " + ((cb == null) ? "without" : "with") + " callback." );
 
         mPlayingRequested = true;
-        startTimerThread(cb, fireFinishEvent);
+        this.startTimerThread(cb, fireFinishEvent);
     }
 
     private int getInterWordDelay()
@@ -241,7 +242,7 @@ public class SpritzerCore
                 bus.post(new SpritzProgressEvent(mCurWordIdx));
             }
             spritzHandler.sendMessage(spritzHandler.obtainMessage(MSG_PRINT_WORD, word));
-            Thread.sleep(getInterWordDelay() * delayMultiplierForWord(word));
+            Thread.sleep(this.getInterWordDelay() * delayMultiplierForWord(word));
             // If word is end of a sentence, add three blanks
             if (word.contains(".") || word.contains("?") || word.contains("!")) {
                 for (int x = 0; x < 3; x++) {

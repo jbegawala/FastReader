@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 
-import jb.fastreader.fragments.WpmDialogFragment;
 
 /**
  * Created by davidbrodsky on 9/21/14.
@@ -72,7 +71,7 @@ public class Preferences
     {
         Resources resources = context.getResources();
         SharedPreferences.Editor editor = context.getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE).edit();
-        editor.putInt(resources.getString(R.string.config_key_wpm), Math.max(wpm, WpmDialogFragment.MIN_WPM)).apply();
+        //editor.putInt(resources.getString(R.string.config_key_wpm), Math.max(wpm, WpmDialogFragment.MIN_WPM)).apply();
     }
 
     public static int getWpm(Context context)

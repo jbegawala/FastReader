@@ -184,16 +184,6 @@ public class SpritzerTextView extends AppCompatTextView implements View.OnClickL
     }
 
     /**
-     * This determines the words per minute the sprizter will read at
-     *
-     * @param wpm the number of words per minute
-     */
-    public void setWpm(int wpm) {
-        spritzerCore.setWpm(wpm);
-    }
-
-
-    /**
      * Set a custom spritzer
      *
      * @param spritzer
@@ -211,7 +201,7 @@ public class SpritzerTextView extends AppCompatTextView implements View.OnClickL
     }
 
     public void pause() {
-        spritzerCore.pause();
+        spritzerCore.pause("SpritzerTextView.pause");
     }
 
 

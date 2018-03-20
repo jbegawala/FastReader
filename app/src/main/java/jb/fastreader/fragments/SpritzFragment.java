@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -18,7 +19,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.facebook.rebound.SimpleSpringListener;
@@ -54,6 +57,7 @@ public class SpritzFragment extends Fragment
     private TextView contentSubtitle;
     private TextView statusText;
     private ProgressBar statusVisual;
+    private Switch speedQuickToggle;
 
     private TextView spritzHistoryView;
     private SpritzerTextView spritzView;
@@ -94,131 +98,38 @@ public class SpritzFragment extends Fragment
         this.spritzView = (SpritzerTextView) root.findViewById(R.id.spritzText);
         //spritzView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
         //spritzHistoryView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
+
+        this.speedQuickToggle = (Switch) root.findViewById(R.id.speedSwitch);
+        this.speedQuickToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked )
+            {
+                if ( isChecked )
+                {
+                    spritzerApp.setWpm(600);
+                }
+                else
+                {
+                    spritzerApp.setWpm(300);
+                }
+            }
+        });
+
         this.setupViews(this.spritzView, this.spritzHistoryView);
 
         return root;
     }
 
-    public void feedMediaUriToSpritzer(Uri mediaUri)
+    private void setupViews(final View touchTarget, final View transformTarget)
     {
-        if (spritzerApp == null)
-        {
-            spritzerApp = new AppSpritzer(this.bus, this.spritzView, mediaUri);
-            this.spritzView.setSpritzer(spritzerApp);
-            Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
-        }
-        else
-        {
-            spritzerApp.setMediaUri(mediaUri);
-            Log.i(TAG, "feedMediaUriToSpritzer called with existing spritzerApp");
-        }
-
-        String configWpm = getResources().getString(R.string.config_key_wpm);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-//        Log.i(TAG, "configwpm: " + configWpm);
-//        int wpm = prefs.getInt("config_key_wpm",300);
-//        Log.i(TAG, " Set WPM to: " + wpm);
-        int wpm = Preferences.DEFAULT_APP_WPM;
-        spritzerApp.setWpm(wpm);
-//        Commenting out because synchronous call
-//        if (AppSpritzer.isHttpUri(mediaUri))
-//        {
-//            spritzerApp.setTextAndStart(getString(R.string.loading), false);
-//            this.statusVisual.setIndeterminate(true);
-//        }
-    }
-
-
-    private void startSpritzer()
-    {
-        spritzerApp.start(true);
-        this.hideMetaInfo();
-        this.hideActionBar();
-    }
-
-    private void pauseSpritzer()
-    {
-        spritzerApp.pause();
-        this.updateMetaUI();
-        this.showMetaInfo();
-        this.showActionBar();
-    }
-
-    private void hideMetaInfo()
-    {
-        this.contentTitle.setVisibility(View.INVISIBLE);
-        this.contentSubtitle.setVisibility(View.INVISIBLE);
-        this.statusText.setVisibility(View.INVISIBLE);
-        this.statusVisual.setVisibility(View.INVISIBLE);
-    }
-
-    private void showMetaInfo()
-    {
-        this.contentTitle.setVisibility(View.VISIBLE);
-        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE)
-        {
-            this.contentSubtitle.setVisibility(View.VISIBLE);
-        }
-        this.statusText.setVisibility(View.VISIBLE);
-        this.statusVisual.setVisibility(View.VISIBLE);
-    }
-
-    private void hideActionBar()
-    {
-        ActionBar bar = getActivity().getActionBar();
-        if ( bar != null)
-        {
-            bar.hide();
-        }
-    }
-    private void showActionBar()
-    {
-        ActionBar bar = getActivity().getActionBar();
-        if ( bar != null)
-        {
-            bar.show();
-        }
-    }
-
-    public void updateMetaUI()
-    {
-        if (!spritzerApp.isMediaSelected())
-        {
-            return;
-        }
-        ISpritzerMedia content = spritzerApp.getMedia();
-
-        this.contentTitle.setText(content.getTitle());
-        this.contentSubtitle.setText(content.getAuthor());
-
-        int progress = 0;
-        String status = "";
-        //if (!spritzerApp.isSpritzingSpecialMessage())
-        //{
-            int currentWord = spritzerApp.getCurrentWordNumber();
-            int wordCount = spritzerApp.getWordCount();
-            progress = currentWord * 100 / wordCount;
-            status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
-        //}
-        Spannable spanRange = new SpannableString(status);
-        TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
-        spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        this.statusText.setText(spanRange);
-        this.statusVisual.setMax(100);
-        this.statusVisual.setProgress(progress);
-    }
-
-    /**
-     * Adjust the target View's height in proportion to
-     * drag events. On drag release, snap the view back into
-     * it's original place.
-     */
-    private void setupViews(final View touchTarget, final View transformTarget) {
         touchTarget.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 if (initHeight == 0)
+                {
                     initHeight = transformTarget.getHeight();
+                }
             }
         });
         touchTarget.setOnTouchListener(new View.OnTouchListener() {
@@ -254,7 +165,7 @@ public class SpritzFragment extends Fragment
                 {
                     if (spritzerApp.isPlaying())
                     {
-                        spritzerApp.pause();
+                        spritzerApp.pause("MotionEvent.ACTION_DOWN");
                     }
                     else
                     {
@@ -270,7 +181,7 @@ public class SpritzFragment extends Fragment
                 {
                     if (spritzerApp.isPlaying() && (event.getEventTime() - event.getDownTime() > timeForPauseThreshold))
                     {
-                        spritzerApp.pause();
+                        spritzerApp.pause("MotionEvent.ACTION_MOVE");
                     }
 
                     if (!mSetText)
@@ -373,67 +284,181 @@ public class SpritzFragment extends Fragment
     }
 
     @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
-
-    @Override
     public void onResume()
     {
         super.onResume();
         FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
-        bus = app.getBus();
-        bus.register(this);
-        mHandler = new SpritzFragmentHandler(this);
+        this.bus = app.getBus();
+        this.bus.register(this);
         if (spritzerApp == null)
         {
-            spritzerApp = new AppSpritzer(bus, spritzView);
+            spritzerApp = new AppSpritzer(this.bus, spritzView);
             spritzView.setSpritzer(spritzerApp);
-            if (spritzerApp.getMedia() == null) {
+            if (spritzerApp.getMedia() == null)
+            {
+                mHandler = new SpritzFragmentHandler(this);
                 mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SPRITZ_TEXT, getString(R.string.select_epub)), 1500);
-            } else {
-                // AppSpritzer loaded the last book being read
-                updateMetaUI();
-                showMetaInfo();
+            }
+            else
+            {
+                this.updateMetaInfo();
+                this.showMetaInfo();
             }
         }
         else
         {
-            spritzerApp.setEventBus(bus);
+            spritzerApp.setEventBus(this.bus);
             spritzView.setSpritzer(spritzerApp);
-            if (!spritzerApp.isPlaying()) {
-                updateMetaUI();
-                showMetaInfo();
-            } else {
-                // If the spritzer is currently playing, be sure to hide the ActionBar
-                // Might the Android linter be a bit aggressive with these null checks?
-                if (getActivity() != null && getActivity().getActionBar() != null) {
-                    hideActionBar();
-                }
+            if (!spritzerApp.isPlaying())
+            {
+                this.updateMetaInfo();
+                this.showMetaInfo();
+            }
+            else
+            {
+                this.hideActionBar();
             }
         }
     }
 
+    public void feedMediaUriToSpritzer(Uri mediaUri)
+    {
+        if (spritzerApp == null)
+        {
+            spritzerApp = new AppSpritzer(this.bus, this.spritzView, mediaUri);
+            this.spritzView.setSpritzer(spritzerApp);
+            Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
+        }
+        else
+        {
+            spritzerApp.setMediaUri(mediaUri);
+            Log.i(TAG, "feedMediaUriToSpritzer called with existing spritzerApp");
+        }
+
+        String configWpm = getResources().getString(R.string.config_key_wpm);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+//        Log.i(TAG, "configwpm: " + configWpm);
+//        int wpm = prefs.getInt("config_key_wpm",300);
+//        Log.i(TAG, " Set WPM to: " + wpm);
+        int wpm = Preferences.DEFAULT_APP_WPM;
+        spritzerApp.setWpm(wpm);
+//        Commenting out because synchronous call
+//        if (AppSpritzer.isHttpUri(mediaUri))
+//        {
+//            spritzerApp.setTextAndStart(getString(R.string.loading), false);
+//            this.statusVisual.setIndeterminate(true);
+//        }
+    }
+
+    private void startSpritzer()
+    {
+        this.hideMetaInfo();
+        this.hideActionBar();
+        spritzerApp.start(true);
+    }
+
+    private void pauseSpritzer()
+    {
+        spritzerApp.pause("SpritzFragment.pauseSpritzer");
+        this.updateMetaInfo();
+        this.showMetaInfo();
+        this.showActionBar();
+    }
+
+    private void hideMetaInfo()
+    {
+        this.contentTitle.setVisibility(View.INVISIBLE);
+        this.contentSubtitle.setVisibility(View.INVISIBLE);
+        this.statusText.setVisibility(View.INVISIBLE);
+        this.statusVisual.setVisibility(View.INVISIBLE);
+        this.speedQuickToggle.setVisibility(View.INVISIBLE);
+    }
+
+    private void showMetaInfo()
+    {
+        this.contentTitle.setVisibility(View.VISIBLE);
+        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE)
+        {
+            this.contentSubtitle.setVisibility(View.VISIBLE);
+        }
+        this.statusText.setVisibility(View.VISIBLE);
+        this.statusVisual.setVisibility(View.VISIBLE);
+        this.speedQuickToggle.setVisibility(View.VISIBLE);
+    }
+
+    private void hideActionBar()
+    {
+        FragmentActivity activity = getActivity();
+        if ( activity != null )
+        {
+            ActionBar bar = activity.getActionBar();
+            if ( bar != null)
+            {
+                bar.hide();
+            }
+        }
+    }
+    private void showActionBar()
+    {
+        FragmentActivity activity = getActivity();
+        if ( activity != null )
+        {
+            ActionBar bar = activity.getActionBar();
+            if ( bar != null)
+            {
+                bar.show();
+            }
+        }
+    }
+
+    public void updateMetaInfo()
+    {
+        if (!spritzerApp.isMediaSelected())
+        {
+            return;
+        }
+        ISpritzerMedia content = spritzerApp.getMedia();
+
+        this.contentTitle.setText(content.getTitle());
+        this.contentSubtitle.setText(content.getAuthor());
+
+        int progress = 0;
+        String status = "";
+        //if (!spritzerApp.isSpritzingSpecialMessage())
+        //{
+            int currentWord = spritzerApp.getCurrentWordNumber();
+            int wordCount = spritzerApp.getWordCount();
+            progress = currentWord * 100 / wordCount;
+            status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
+        //}
+        Spannable spanRange = new SpannableString(status);
+        TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
+        spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        this.statusText.setText(spanRange);
+        this.statusVisual.setMax(100);
+        this.statusVisual.setProgress(progress);
+    }
+
+
+
     @Override
-    public void onStop() {
+    public void onStop()
+    {
         super.onStop();
-        if (spritzerApp != null) {
+        if (spritzerApp != null)
+        {
             spritzerApp.saveState();
         }
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (bus != null) {
-            bus.unregister(this);
-        }
-    }
-
-    public AppSpritzer getSpritzer()
+    public void onDestroy()
     {
-        return this.spritzerApp;
+        super.onDestroy();
+        if (this.bus != null)
+        {
+            this.bus.unregister(this);
+        }
     }
 
     /**

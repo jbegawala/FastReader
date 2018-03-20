@@ -19,7 +19,6 @@
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
         android:ellipsize="marquee"
-        android:singleLine="false"
         android:textSize="@dimen/spritzer_title_text_size" />
 
     <TextView
@@ -32,7 +31,7 @@
         android:layout_alignLeft="@id/contentTitle"
         android:layout_below="@id/contentTitle"
         android:ellipsize="marquee"
-        android:singleLine="true"
+        android:maxLines="1"
         android:textSize="@dimen/spritzer_author_text_size" />
 
     <TextView
@@ -94,4 +93,14 @@
         android:clickable="true"
         android:textColor="@color/chapter_text_color"
         android:textSize="@dimen/chapter_text_size" />
+
+    <Switch
+        android:id="@+id/speedSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/statusVisual"
+        android:layout_alignParentEnd="true"
+        android:checked="true"
+        android:textOff="@string/toggle_speed_slow"
+        android:textOn="@string/toggle_speed_fast" />
 </RelativeLayout>

@@ -16,11 +16,6 @@ import jb.fastreader.formats.*;
 import jb.spritzer.SpritzerCore;
 import jb.spritzer.ISpritzerCallback;
 
-/**
- * A higher-level {@link SpritzerCore} that operates
- * on Uris pointing to .epubs on disk or http urls, instead
- * of a plain String
- */
 // TODO: Save State for multiple books
 public class AppSpritzer extends SpritzerCore
 {
@@ -49,7 +44,7 @@ public class AppSpritzer extends SpritzerCore
     }
 
     public void setMediaUri(Uri uri) {
-        pause();
+        pause("setMediaUri");
         openMedia(uri);
     }
 
