@@ -1,12 +1,12 @@
 package jb.fastreader.activities;
 
-import android.app.Activity;
+import android.preference.PreferenceActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import jb.fastreader.R;
+import jb.fastreader.fragments.ConfigurationFragment;
 
-public class ConfigurationActivity extends Activity
+public class ConfigurationActivity extends PreferenceActivity
 {
     private static final String TAG = ConfigurationActivity.class.getSimpleName();
 
@@ -14,9 +14,17 @@ public class ConfigurationActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_preferences);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        // Nothing to go back to yet
+        // getActionBar().setDisplayHomeAsUpEnabled(true);
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new ConfigurationFragment()).commit();
     }
+
+    @Override
+    protected boolean isValidFragment(String fragmentName)
+    {
+        return ConfigurationActivity.class.getName().equals(fragmentName);
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)

@@ -3,6 +3,7 @@ package jb.fastreader.fragments;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 
 import jb.fastreader.R;
 
@@ -26,6 +27,8 @@ public class ConfigurationFragment extends PreferenceFragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        PreferenceManager.setDefaultValues(getActivity(),R.xml.preferences, false);
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);

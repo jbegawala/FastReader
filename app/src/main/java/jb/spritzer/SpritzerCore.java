@@ -1,7 +1,11 @@
 package jb.spritzer;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -18,6 +22,7 @@ import jb.fastreader.R;
 import jb.spritzer.events.SpritzFinishedEvent;
 import jb.spritzer.events.SpritzProgressEvent;
 
+
 /**
  * SpritzerCore parses a String into a Queue
  * of words, and displays them one-by-one
@@ -26,7 +31,6 @@ import jb.spritzer.events.SpritzProgressEvent;
 public class SpritzerCore
 {
     protected static final String TAG = "SpritzerCore";
-    private static final int DEFAULTWPM = 600;
 
     protected static final int MSG_PRINT_WORD = 1;
     protected static final int MSG_SET_ENABLED = 2;
@@ -52,7 +56,10 @@ public class SpritzerCore
         // used to be its own protected method
         this.mCurWordIdx = 0;
         this.mDisplayWordList = new ArrayList<>();
-        this.wpm = DEFAULTWPM;
+        Context context = target.getContext();
+        Resources resources = context.getResources();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
         this.isPlaying = false;
         this.mPlayingRequested = false;
         this.mSpritzThreadStarted = false;

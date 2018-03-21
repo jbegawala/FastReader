@@ -41,4 +41,13 @@
     <string name="pref_key_word">pref_key_word</string>
     <string name="toggle_speed_fast">Fast</string>
     <string name="toggle_speed_slow">Slow</string>
+    <string name="config_cat_wpm">WPM</string>
+    <string name="config_wpm_fast">Fast</string>
+    <string name="config_wpm_fast_desc">The WPM to use for high speed</string>
+    <string name="config_wpm_fast_key">config_wpm_fast</string>
+    <string name="config_wpm_fast_default">600</string>
+    <string name="config_wpm_slow">Slow</string>
+    <string name="config_wpm_slow_desc">The WPM to use for slow speed</string>
+    <string name="config_wpm_slow_key">config_wpm_slow</string>
+    <string name="config_wpm_slow_default">300</string>
 </resources>

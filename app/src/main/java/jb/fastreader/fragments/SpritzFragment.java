@@ -1,8 +1,10 @@
 package jb.fastreader.fragments;
 
 import android.app.ActionBar;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -66,7 +68,7 @@ public class SpritzFragment extends Fragment
 
     public SpritzFragment()
     {
-        // TODO should i initialize sprtizerApp?
+        // TODO should I initialize sprtizerApp?
 
     }
 
@@ -105,13 +107,18 @@ public class SpritzFragment extends Fragment
             @Override
             public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked )
             {
+                Context context = getActivity().getBaseContext();
+                Resources resources = context.getResources();
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
                 if ( isChecked )
                 {
-                    spritzerApp.setWpm(600);
+                    int fastWpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
+                    spritzerApp.setWpm(fastWpm);
                 }
                 else
                 {
-                    spritzerApp.setWpm(300);
+                    int slowWpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_slow_key), resources.getString(R.string.config_wpm_slow_default)));
+                    spritzerApp.setWpm(slowWpm);
                 }
             }
         });

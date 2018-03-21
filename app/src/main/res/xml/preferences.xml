@@ -2,12 +2,24 @@
 
 <PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <EditTextPreference
-        android:defaultValue="300"
-        android:key="@string/config_key_wpm"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:summary="@string/config_desc_wpm"
-        android:title="@string/config_title_wpm" />
+    <PreferenceCategory android:title="@string/config_cat_wpm">
+
+        <EditTextPreference
+            android:defaultValue="@string/config_wpm_fast_default"
+            android:key="@string/config_wpm_fast_key"
+            android:numeric="integer"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/config_wpm_fast_desc"
+            android:title="@string/config_wpm_fast" />
+        <EditTextPreference
+            android:defaultValue="@string/config_wpm_slow_default"
+            android:key="@string/config_wpm_slow_key"
+            android:numeric="integer"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/config_wpm_slow_desc"
+            android:title="@string/config_wpm_slow" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
