@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import jb.fastreader.R;
-import jb.spritzer.events.SpritzFinishedEvent;
 import jb.spritzer.events.SpritzProgressEvent;
 
 
@@ -42,10 +41,9 @@ public class SpritzerCore
     protected TextView textViewTarget;
     protected int wpm;
     protected Handler spritzHandler;
-    protected boolean isPlaying;
-    protected boolean mPlayingRequested;
-    protected boolean mSpritzThreadStarted;
-    protected boolean mLoopingPlayback;
+    private boolean isPlaying;
+    private boolean playingRequested;
+    private boolean spritzThreadStarted;
 
     protected Bus bus;
     protected int mCurWordIdx;
@@ -61,8 +59,8 @@ public class SpritzerCore
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
         this.isPlaying = false;
-        this.mPlayingRequested = false;
-        this.mSpritzThreadStarted = false;
+        this.playingRequested = false;
+        this.spritzThreadStarted = false;
 
         this.textViewTarget = target;
         this.spritzHandler = new SpritzHandler(this);
@@ -81,8 +79,10 @@ public class SpritzerCore
     {
         Log.i(TAG, "pause: Pausing spritzer from " + info);
 
-        mPlayingRequested = false;
-        synchronized (mSpritzThreadStartedSync) {
+        this.requestStop();
+
+        synchronized (mSpritzThreadStartedSync)
+        {
             while (this.isPlaying)
             {
                 try
@@ -206,13 +206,66 @@ public class SpritzerCore
         Log.i(TAG, "start2");
         if (this.isPlaying || this.wordArray == null)
         {
-            Log.w(TAG, "Start called in invalid state");
+            Log.w(TAG, "Start called in invalid state: isPlaying: " + this.isPlaying + " wordArray: " + this.wordArray);
             return;
         }
         Log.i(TAG, "Start called " + ((cb == null) ? "without" : "with") + " callback." );
 
-        mPlayingRequested = true;
+        this.requestPlay();
         this.startTimerThread(cb, fireFinishEvent);
+    }
+
+    /**
+     * Begin the background timer thread
+     */
+    private void startTimerThread(final ISpritzerCallback callback, final boolean fireFinishEvent)
+    {
+        synchronized (mSpritzThreadStartedSync)
+        {
+            if (!spritzThreadStarted)
+            {
+                new Thread(new SpritzerThread(this, callback, fireFinishEvent)).start();
+            }
+        }
+    }
+
+    protected boolean shouldPlay()
+    {
+        return playingRequested;
+    }
+
+    void requestPlay()
+    {
+        playingRequested = true;
+    }
+
+    void requestStop()
+    {
+        playingRequested = false;
+    }
+    void setIsPlaying()
+    {
+
+        Log.i(TAG, "Starting spritzThread with queue length " + mDisplayWordList.size());
+
+        this.isPlaying = true;
+        synchronized (mSpritzThreadStartedSync)
+        {
+            spritzThreadStarted = true;
+        }
+    }
+
+    void setNotPlaying()
+    {
+        Log.i(TAG, "Stopping spritzThread");
+
+        this.isPlaying = false;
+
+        synchronized (mSpritzThreadStartedSync)
+        {
+            mSpritzThreadStartedSync.notify();
+        }
+        spritzThreadStarted = false;
     }
 
     private int getInterWordDelay()
@@ -376,59 +429,6 @@ public class SpritzerCore
         textViewTarget.setText(spanRange);
     }
 
-    /**
-     * Begin the background timer thread
-     */
-    private void startTimerThread(final ISpritzerCallback cb, final boolean fireFinishEvent) {
-        synchronized (mSpritzThreadStartedSync) {
-            if (!mSpritzThreadStarted) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.i(TAG, "Starting spritzThread with queue length " + mDisplayWordList.size() + " and " +
-                                    ((cb == null) ? "no " : "a ") + "callback. Playback requested: " + mPlayingRequested);
-                        isPlaying = true;
-                        synchronized (mSpritzThreadStartedSync) {
-                            mSpritzThreadStarted = true;
-                        }
-                        while (mPlayingRequested) {
-                            try {
-                                processNextWord();
-                                if (isWordListComplete()) {
-                                    if (mLoopingPlayback) {
-                                        refillWordDisplayList();
-                                        continue;
-                                    }
-                                    Log.i(TAG, "Word list completely displayed after processNextWord. Pausing");
-
-                                    mPlayingRequested = false;
-//                                    if (bus != null && fireFinishEvent) {
-//                                        bus.post(new SpritzFinishedEvent());
-//                                    }
-                                    if (cb != null)
-                                    {
-                                        Log.i(TAG, "Calling callback");
-                                        cb.onSpritzerFinished();
-                                    }
-                                }
-                                mCurWordIdx++;
-                            } catch (InterruptedException e) {
-                                Log.e(TAG, "Exception spritzing");
-                                e.printStackTrace();
-                            }
-                        }
-                        Log.i(TAG, "Stopping spritzThread");
-                        isPlaying = false;
-                        synchronized (mSpritzThreadStartedSync) {
-                            mSpritzThreadStartedSync.notify();
-                        }
-                        mSpritzThreadStarted = false;
-
-                    }
-                }).start();
-            }
-        }
-    }
 
     private int delayMultiplierForWord(String word)
     {
@@ -458,11 +458,6 @@ public class SpritzerCore
     public void setEventBus(Bus bus)
     {
         this.bus = bus;
-    }
-
-    public void setLoopingPlayback(boolean doLoop)
-    {
-        mLoopingPlayback = doLoop;
     }
 
     public void setMaxWordLength(int maxWordLength)

@@ -107,7 +107,7 @@ public class AppSpritzer extends SpritzerCore
 
     protected void processNextWord() throws InterruptedException {
         super.processNextWord();
-        if (this.isPlaying && mPlayingRequested && isWordListComplete() && chapter < getMaxChapter()) {
+        if (this.isPlaying() && this.shouldPlay() && isWordListComplete() && chapter < getMaxChapter()) {
             // If we are Spritzing a special message, don't automatically proceed to the next chapter
             if (mSpritzingSpecialMessage) {
                 mSpritzingSpecialMessage = false;
@@ -211,7 +211,7 @@ public class AppSpritzer extends SpritzerCore
         }
 
         final String finalContent = content;
-        if (!this.isPlaying && finalContent.length() > 0) {
+        if (!this.isPlaying() && finalContent.length() > 0) {
             setWpm(SPECIAL_MESSAGE_WPM);
             // Set mSpritzingSpecialMessage to true, so processNextWord doesn't
             // automatically proceed to the next chapter
