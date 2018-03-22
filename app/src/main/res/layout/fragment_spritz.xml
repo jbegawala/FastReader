@@ -57,7 +57,7 @@
         android:textColor="?attr/ultra_subdued_text"
         android:background="?attr/spritz_history_curtain" />
 
-    <jb.spritzer.SpritzerTextView
+    <jb.fastreader.spritz.SpritzerTextView
         android:id="@+id/spritzText"
         android:layout_width="@dimen/spritzer_text_view_width"
         android:layout_height="wrap_content"

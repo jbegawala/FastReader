@@ -1,4 +1,4 @@
-package jb.spritzer.events;
+package jb.fastreader.spritz.events;
 
 /**
  * Created by Andrew on 3/15/14.

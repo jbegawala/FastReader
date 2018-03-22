@@ -17,7 +17,6 @@ import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -26,19 +25,16 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.facebook.rebound.SimpleSpringListener;
-import com.facebook.rebound.Spring;
-import com.facebook.rebound.SpringSystem;
 import com.squareup.otto.Bus;
 
 import java.lang.ref.WeakReference;
 
-import jb.fastreader.AppSpritzer;
+import jb.fastreader.spritz.Spritzer;
 import jb.fastreader.FastReaderApplication;
 import jb.fastreader.R;
 import jb.fastreader.events.ChapterSelectRequested;
 import jb.fastreader.formats.ISpritzerMedia;
-import jb.spritzer.SpritzerTextView;
+import jb.fastreader.spritz.SpritzerTextView;
 import jb.fastreader.Preferences;
 
 
@@ -51,7 +47,7 @@ public class SpritzFragment extends Fragment
     protected static final int MSG_SPRITZ_TEXT = 1;
     protected static final int MSG_HIDE_CHAPTER_LABEL = 2;
 
-    private static AppSpritzer spritzerApp;
+    private Spritzer spritzerApp;
     static float initHeight;
 
     // Meta UI components
@@ -110,16 +106,19 @@ public class SpritzFragment extends Fragment
                 Context context = getActivity().getBaseContext();
                 Resources resources = context.getResources();
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                String wpmKey;
+                String wpmDefault;
                 if ( isChecked )
                 {
-                    int fastWpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
-                    spritzerApp.setWpm(fastWpm);
+                    wpmKey = resources.getString(R.string.config_wpm_fast_key);
+                    wpmDefault = resources.getString(R.string.config_wpm_fast_default);
                 }
                 else
                 {
-                    int slowWpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_slow_key), resources.getString(R.string.config_wpm_slow_default)));
-                    spritzerApp.setWpm(slowWpm);
+                    wpmKey = resources.getString(R.string.config_wpm_slow_key);
+                    wpmDefault = resources.getString(R.string.config_wpm_slow_default);
                 }
+                spritzerApp.setWpm(Integer.parseInt(sharedPreferences.getString(wpmKey, wpmDefault)));
             }
         });
 
@@ -128,166 +127,19 @@ public class SpritzFragment extends Fragment
         return root;
     }
 
-    private void setupViews(final View touchTarget, final View transformTarget)
+    private void setupViews(final View touchTarget, final View historyView)
     {
         touchTarget.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 if (initHeight == 0)
                 {
-                    initHeight = transformTarget.getHeight();
+                    initHeight = historyView.getHeight();
                 }
             }
         });
-        touchTarget.setOnTouchListener(new View.OnTouchListener() {
 
-            private ViewGroup.LayoutParams params;
-            private float peakHeight;
-            private float lastTouchY;
-            private float firstTouchY;
-            private final float fullOpacityHeight = 300;
-
-            /** The distance between ACTION_DOWN and ACTION_UP, above which should
-             * be interpreted as a drag, below which a click.
-             */
-            private final float movementForDragThreshold = 20;
-
-            /** The time between ACTION_DOWN and ACTION_MOVE, above which should
-             * be interpreted as a drag, and the spritzer paused
-             */
-            private final int timeForPauseThreshold = 50;
-
-            private boolean mSetText = false;
-            private boolean mAnimatingBack = false;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event)
-            {
-                if (params == null)
-                {
-                    params = transformTarget.getLayoutParams();
-                }
-
-                if (event.getAction() == MotionEvent.ACTION_DOWN)
-                {
-                    if (spritzerApp.isPlaying())
-                    {
-                        spritzerApp.pause("MotionEvent.ACTION_DOWN");
-                    }
-                    else
-                    {
-                        spritzerApp.start(true);
-                    }
-                    Log.i("SpritzFragmentTOUCH", "Down");
-                    int coords[] = new int[2];
-                    transformTarget.getLocationOnScreen(coords);
-                    lastTouchY = firstTouchY = event.getRawY();
-                }
-
-                else if (event.getAction() == MotionEvent.ACTION_MOVE)
-                {
-                    if (spritzerApp.isPlaying() && (event.getEventTime() - event.getDownTime() > timeForPauseThreshold))
-                    {
-                        spritzerApp.pause("MotionEvent.ACTION_MOVE");
-                    }
-
-                    if (!mSetText)
-                    {
-                        spritzHistoryView.setText(spritzerApp.getHistoryString(400));
-                        mSetText = true;
-                    }
-                    float newHeight = event.getRawY() - lastTouchY + transformTarget.getHeight();
-//                    Log.i("MOVE", "touch-y: " + event.getRawY() + " lastTouch: " + lastTouchY + " height: " + transformTarget.getHeight());
-
-                    if (newHeight > initHeight)
-                    {
-//                        Log.i("TOUCH", "setting height " + params.height);
-                        params.height = (int) newHeight;
-                        if (newHeight >= fullOpacityHeight) {
-                            transformTarget.setAlpha(1f);
-//                            Log.i("TOUCH", "alpha 1");
-                        } else {
-                            transformTarget.setAlpha((newHeight / fullOpacityHeight) * .8f);
-//                            Log.i("TOUCH", "alpha " + newHeight / fullOpacityHeight);
-                        }
-                        transformTarget.requestLayout();
-                    }
-
-                    lastTouchY = event.getRawY();
-                }
-
-                else if (event.getAction() == MotionEvent.ACTION_UP && !mAnimatingBack) {
-                    if (event.getRawY() - firstTouchY < movementForDragThreshold)
-                    {
-                        // This is a click, not a drag
-                        // show/hide meta ui on release
-                        if (!spritzerApp.isPlaying()) pauseSpritzer();
-                        else startSpritzer();
-                        return false;
-                    }
-                    peakHeight = event.getRawY() - lastTouchY + transformTarget.getHeight();
-                    mAnimatingBack = true;
-//                    Log.i("TOUCH", "animating back up " + initHeight + " " + transformTarget.getHeight());
-                    invokeSpring(transformTarget);
-
-                }
-
-                return true;
-            }
-
-            private void invokeSpring(final View targetView) {
-                mAnimatingBack = true;
-                // Create a system to run the physics loop for a set of springs.
-                SpringSystem springSystem = SpringSystem.create();
-
-                // Add a spring to the system.
-                Spring spring = springSystem.createSpring();
-
-                // Add a listener to observe the motion of the spring.
-                spring.addListener(new SimpleSpringListener() {
-
-                    @Override
-                    public void onSpringUpdate(Spring spring) {
-                        // You can observe the updates in the spring
-                        // state by asking its current value in onSpringUpdate.
-                        float value = (float) spring.getCurrentValue();
-                        float scale = 1f - (value);
-                        //Log.i("SPRING", String.valueOf(value));
-                        // 0 - initHeight
-                        // 1 - peakHeight
-                        if (scale < 0.05)
-                        {
-                            //Log.i("SPRING", "finished");
-                            spritzHistoryView.setText("");
-                            mSetText = false;
-                            params.height = (int) initHeight;
-                            transformTarget.setAlpha(0);
-                            mAnimatingBack = false;
-                            startSpritzer();
-                        }
-                        else if (mAnimatingBack)
-                        {
-                            params.height = (int) ((scale * (peakHeight - initHeight)) + initHeight);
-                            if (transformTarget.getHeight() >= fullOpacityHeight * 2)
-                            {
-                                transformTarget.setAlpha(1f);
-                            }
-                            else
-                            {
-                                //fullOpacityHeight*2 = full
-                                //fullOpacityHeight = empty
-                                transformTarget.setAlpha(Math.max(0, fullOpacityHeight - transformTarget.getHeight() * 1.1f));
-                                //Log.i("TOUCH", "alpha " + touchTarget.getHeight() / fullOpacityHeight);
-                            }
-                        }
-                        transformTarget.requestLayout();
-                    }
-                });
-
-                // Set the spring in motion; moving from 0 to 1
-                spring.setEndValue(1);
-            }
-        });
+        touchTarget.setOnTouchListener(new SpritzTouchListener(this, historyView));
     }
 
     @Override
@@ -299,7 +151,7 @@ public class SpritzFragment extends Fragment
         this.bus.register(this);
         if (spritzerApp == null)
         {
-            spritzerApp = new AppSpritzer(this.bus, spritzView);
+            spritzerApp = new Spritzer(this.bus, spritzView);
             spritzView.setSpritzer(spritzerApp);
             if (spritzerApp.getMedia() == null)
             {
@@ -332,7 +184,7 @@ public class SpritzFragment extends Fragment
     {
         if (spritzerApp == null)
         {
-            spritzerApp = new AppSpritzer(this.bus, this.spritzView, mediaUri);
+            spritzerApp = new Spritzer(this.bus, this.spritzView, mediaUri);
             this.spritzView.setSpritzer(spritzerApp);
             Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
         }
@@ -350,18 +202,32 @@ public class SpritzFragment extends Fragment
         int wpm = Preferences.DEFAULT_APP_WPM;
         spritzerApp.setWpm(wpm);
 //        Commenting out because synchronous call
-//        if (AppSpritzer.isHttpUri(mediaUri))
+//        if (Spritzer.isHttpUri(mediaUri))
 //        {
 //            spritzerApp.setTextAndStart(getString(R.string.loading), false);
 //            this.statusVisual.setIndeterminate(true);
 //        }
     }
 
+
+    void userTap()
+    {
+
+        if (spritzerApp.isPlaying())
+        {
+            this.pauseSpritzer();
+        }
+        else
+        {
+            this.startSpritzer();
+        }
+    }
+
     private void startSpritzer()
     {
         this.hideMetaInfo();
         this.hideActionBar();
-        spritzerApp.start(true);
+        spritzerApp.start(true, "startSpritzer");
     }
 
     private void pauseSpritzer()

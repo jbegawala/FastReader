@@ -1,4 +1,4 @@
-package jb.spritzer;
+package jb.fastreader.spritz;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -10,7 +10,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.TextView;
 
 /**
  * Created by andrewgiang on 3/3/14.
@@ -197,7 +196,7 @@ public class SpritzerTextView extends AppCompatTextView implements View.OnClickL
      * Will play the spritz text that was set in setSpritzText
      */
     public void play() {
-        spritzerCore.start(true);
+        spritzerCore.start(true, "SpritzerTextView.play");
     }
 
     public void pause() {

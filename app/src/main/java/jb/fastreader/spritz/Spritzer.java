@@ -1,4 +1,4 @@
-package jb.fastreader;
+package jb.fastreader.spritz;
 
 import android.content.UriPermission;
 import android.net.Uri;
@@ -10,24 +10,24 @@ import com.squareup.otto.Bus;
 
 import java.util.List;
 
+import jb.fastreader.Preferences;
+import jb.fastreader.R;
 import jb.fastreader.events.DummyParsedEvent;
 import jb.fastreader.events.NextChapterEvent;
 import jb.fastreader.formats.*;
-import jb.spritzer.SpritzerCore;
-import jb.spritzer.ISpritzerCallback;
 
 // TODO: Save State for multiple books
-public class AppSpritzer extends SpritzerCore
+public class Spritzer extends SpritzerCore
 {
     public static final int SPECIAL_MESSAGE_WPM = 100;
-    public static final String TAG = AppSpritzer.class.getSimpleName();
+    public static final String TAG = Spritzer.class.getSimpleName();
 
     private int chapter;
     private ISpritzerMedia media;
     private Uri mMediaUri;
     private boolean mSpritzingSpecialMessage;
 
-    public AppSpritzer(Bus bus, TextView target)
+    public Spritzer(Bus bus, TextView target)
     {
         super(target);
         setEventBus(bus);
@@ -35,7 +35,7 @@ public class AppSpritzer extends SpritzerCore
         Log.v(TAG, "Constructor 1");
     }
 
-    public AppSpritzer(Bus bus, TextView target, Uri mediaUri)
+    public Spritzer(Bus bus, TextView target, Uri mediaUri)
     {
         super(target);
         setEventBus(bus);

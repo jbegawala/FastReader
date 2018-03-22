@@ -19,7 +19,7 @@
         android:gravity="center" />
         -->
 
-    <jb.spritzer.SpritzerTextView
+    <jb.fastreader.spritz.SpritzerTextView
         android:id="@android:id/empty"
         android:indeterminate="true"
         android:layout_width="400dp"

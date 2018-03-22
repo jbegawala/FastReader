@@ -1,4 +1,4 @@
-package jb.spritzer;
+package jb.fastreader.spritz;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import jb.fastreader.R;
-import jb.spritzer.events.SpritzProgressEvent;
+import jb.fastreader.spritz.events.SpritzProgressEvent;
 
 
 /**
@@ -97,13 +97,6 @@ public class SpritzerCore
         }
     }
 
-    /**
-     * Prepare to Spritz the given String input
-     * <p/>
-     * Call {@link #start(boolean)} to begin display
-     *
-     * @param input
-     */
     public void setText(String input)
     {
         Log.i(TAG, "setText: " + input);
@@ -188,9 +181,9 @@ public class SpritzerCore
      * Start displaying the String input
      * fed to {@link #setText(String)}
      */
-    public void start(boolean fireFinishEvent)
+    public void start(boolean fireFinishEvent, String source)
     {
-        Log.i(TAG, "start1");
+        Log.i(TAG, "start1 called from " + source);
         this.start(null, fireFinishEvent);
     }
 
@@ -206,27 +199,13 @@ public class SpritzerCore
         Log.i(TAG, "start2");
         if (this.isPlaying || this.wordArray == null)
         {
-            Log.w(TAG, "Start called in invalid state: isPlaying: " + this.isPlaying + " wordArray: " + this.wordArray);
+            Log.w(TAG, "Start called in invalid state");
             return;
         }
         Log.i(TAG, "Start called " + ((cb == null) ? "without" : "with") + " callback." );
 
         this.requestPlay();
         this.startTimerThread(cb, fireFinishEvent);
-    }
-
-    /**
-     * Begin the background timer thread
-     */
-    private void startTimerThread(final ISpritzerCallback callback, final boolean fireFinishEvent)
-    {
-        synchronized (mSpritzThreadStartedSync)
-        {
-            if (!spritzThreadStarted)
-            {
-                new Thread(new SpritzerThread(this, callback, fireFinishEvent)).start();
-            }
-        }
     }
 
     protected boolean shouldPlay()

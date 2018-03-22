@@ -1,4 +1,4 @@
-package jb.spritzer;
+package jb.fastreader.spritz;
 
 import android.util.Log;
 

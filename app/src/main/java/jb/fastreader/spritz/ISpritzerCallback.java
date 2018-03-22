@@ -1,4 +1,4 @@
-package jb.spritzer;
+package jb.fastreader.spritz;
 
 /**
  * Created by jb on 2/25/18.
