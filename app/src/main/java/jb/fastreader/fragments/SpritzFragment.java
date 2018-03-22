@@ -149,9 +149,15 @@ public class SpritzFragment extends Fragment
         FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
         this.bus = app.getBus();
         this.bus.register(this);
+
         if (spritzerApp == null)
         {
-            spritzerApp = new Spritzer(this.bus, spritzView);
+            Context context = getContext();
+            Resources resources = context.getResources();
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
+
+            spritzerApp = new Spritzer(this.bus, spritzView, wpm);
             spritzView.setSpritzer(spritzerApp);
             if (spritzerApp.getMedia() == null)
             {
@@ -184,7 +190,12 @@ public class SpritzFragment extends Fragment
     {
         if (spritzerApp == null)
         {
-            spritzerApp = new Spritzer(this.bus, this.spritzView, mediaUri);
+            Context context = getContext();
+            Resources resources = context.getResources();
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
+
+            spritzerApp = new Spritzer(this.bus, this.spritzView, wpm, mediaUri);
             this.spritzView.setSpritzer(spritzerApp);
             Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
         }

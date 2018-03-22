@@ -75,7 +75,7 @@ public class SpritzerTextView extends AppCompatTextView implements View.OnClickL
         int pivotPadding = getPivotPadding();
         setPadding(getPaddingLeft(), pivotPadding, getPaddingRight(), pivotPadding);
         mPaintWidthPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, PAINT_WIDTH_DP, getResources().getDisplayMetrics());
-        spritzerCore = new SpritzerCore(this);
+        spritzerCore = new SpritzerCore(this, 600);
         mPaintGuides = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintGuides.setStyle(Paint.Style.STROKE);
         mPaintGuides.setColor(getCurrentTextColor());
