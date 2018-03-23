@@ -28,6 +28,9 @@ import jb.fastreader.spritz.events.SpritzProgressEvent;
 // TODO: Save State for multiple books
 public class Spritzer extends SpritzerCore
 {
+
+    static final int MSG_PRINT_WORD = 1;
+    static final int MSG_SET_ENABLED = 2;
     public static final int SPECIAL_MESSAGE_WPM = 100;
     public static final String TAG = Spritzer.class.getSimpleName();
 

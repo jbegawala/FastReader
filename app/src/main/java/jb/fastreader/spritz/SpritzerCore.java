@@ -1,51 +1,36 @@
 package jb.fastreader.spritz;
 
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.TextAppearanceSpan;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import jb.fastreader.R;
-
-
-/**
- * SpritzerCore parses a String into a Queue
- * of words, and displays them one-by-one
- * onto a TextView at a given WPM.
- */
-public class SpritzerCore
+class SpritzerCore
 {
-
-    static final int MSG_PRINT_WORD = 1;
-    static final int MSG_SET_ENABLED = 2;
     static final int CHARS_LEFT_OF_PIVOT = 3;
+    static final int LONG_WORD_DELAY_THRESHOLD = 8;
 
     private static int maxWordLength = 13;
 
-    public static ArrayList<SpritzerWord> ProcessText(String input)
+    static ArrayList<SpritzerWord> ProcessText(String input)
     {
         return ProcessText(new ArrayList<SpritzerWord>(), input);
     }
 
-
-    public static ArrayList<SpritzerWord> ProcessText(ArrayList<SpritzerWord> wordList, String input)
+    static ArrayList<SpritzerWord> ProcessText(ArrayList<SpritzerWord> wordList, String input)
     {
         // Merge adjacent spaces and split on spaces
         String[] wordArray = input.replaceAll("/\\s+/g", " ").split(" ");
 
         // Add words to queue
+        String word;
         for ( int i = 0; i < wordArray.length; i++ )
         {
-            if ( wordArray[i].length() > maxWordLength )
+            word = wordArray[i].trim();
+            if ( word.length() > maxWordLength )
             {
-                addWord(wordList, splitLongWord(wordArray[i]));
+                addWord(wordList, splitLongWord(word));
             }
             else
             {
-                addWord(wordList, wordArray[i]);
+                addWord(wordList, word);
             }
         }
 
@@ -62,118 +47,84 @@ public class SpritzerCore
 
     private static void addWord(ArrayList<SpritzerWord> wordList, String word)
     {
-
+        if ( !word.isEmpty() )
+        {
+            wordList.add(new SpritzerWord(word));
+        }
     }
-
-
 
     /**
      * Split the given String if appropriate and
      * add the tail of the split to the head of
-     * {@link #wordList}
-     * <p/>
-     * Currently public for testing purposes
      *
-     * @param word
-     * @return
+     * @return array of word pieces
      */
-    public static String[] splitLongWord(String word)
+    private static String[] splitLongWord(String word)
     {
+        String[] wordSegments = new String[(word.length()/maxWordLength)+1];
 
-            int splitIndex = findSplitIndex(word);
-            String firstSegment;
-            firstSegment = word.substring(0, splitIndex);
-            // A word split is always indicated with a hyphen unless ending in a period
-            if (!firstSegment.contains("-") && !firstSegment.endsWith(".")) {
-                firstSegment = firstSegment + "-";
+        int splitIndex;
+        int piece = 0;
+
+        for ( int i = 0; i < word.length(); i = splitIndex)
+        {
+            splitIndex = findSplitIndex(word);
+            String segment = word.substring(i, splitIndex);
+            if ( !wordContainsSplittingCharacter(segment) )
+            {
+                segment += "-";
             }
-            wordList.add(mCurWordIdx + 1, word.substring(splitIndex));
-            word = firstSegment;
-        return word;
+            wordSegments[piece++] = segment;
+        }
+
+        return wordSegments;
     }
 
     /**
      * Determine the split index on a given String
      * e.g If it exceeds maxWordLength or contains a hyphen
      *
-     * @param thisWord
      * @return the index on which to split the given String
      */
-    private int findSplitIndex(String thisWord) {
+    private static int findSplitIndex(String word)
+    {
         int splitIndex;
+
         // Split long words, at hyphen or dot if present.
-        if (thisWord.contains("-")) {
-            splitIndex = thisWord.indexOf("-") + 1;
-        } else if (thisWord.contains(".")) {
-            splitIndex = thisWord.indexOf(".") + 1;
-        } else if (thisWord.length() > maxWordLength * 2) {
-            // if the word is floccinaucinihilipilifcation, for example.
-            splitIndex = maxWordLength - 1;
-            // 12 characters plus a "-" == 13.
-        } else {
-            // otherwise we want to split near the middle.
-            splitIndex = Math.round(thisWord.length() / 2F);
+        if (word.contains("-"))
+        {
+            splitIndex = word.indexOf("-") + 1;
         }
+        else if (word.contains("."))
+        {
+            splitIndex = word.indexOf(".") + 1;
+        }
+        else if (word.length() > maxWordLength * 2)
+        {
+            splitIndex = maxWordLength - 1;
+        }
+        else
+        {
+            splitIndex = (word.length() +1 ) / 2;
+        }
+
         // in case we found a split character that was > maxWordLength characters in.
-        if (splitIndex > maxWordLength) {
+        if (splitIndex > maxWordLength)
+        {
             // If we split the word at a splitting char like "-" or ".", we added one to the splitIndex
             // in order to ensure the splitting char appears at the head of the split. Not accounting
             // for this in the recursive call will cause a StackOverflowException
-            return findSplitIndex(thisWord.substring(0,
-                    wordContainsSplittingCharacter(thisWord) ? splitIndex - 1 : splitIndex));
+            if ( wordContainsSplittingCharacter(word) )
+            {
+                splitIndex--;
+            }
+            return findSplitIndex(word.substring(0, splitIndex));
         }
         return splitIndex;
     }
 
-    private boolean wordContainsSplittingCharacter(String word)
+    private static boolean wordContainsSplittingCharacter(String word)
     {
         return (word.contains(".") || word.contains("-"));
-    }
-
-
-    private void printWord(String word) {
-        int startSpan = 0;
-        int endSpan = 0;
-        word = word.trim();
-        if (word.length() == 1) {
-            StringBuilder builder = new StringBuilder();
-            for (int x = 0; x < CHARS_LEFT_OF_PIVOT; x++) {
-                builder.append(" ");
-            }
-            builder.append(word);
-            word = builder.toString();
-            startSpan = CHARS_LEFT_OF_PIVOT;
-            endSpan = startSpan + 1;
-        } else if (word.length() <= CHARS_LEFT_OF_PIVOT * 2) {
-            StringBuilder builder = new StringBuilder();
-            int halfPoint = word.length() / 2;
-            int beginPad = CHARS_LEFT_OF_PIVOT - halfPoint;
-            for (int x = 0; x <= beginPad; x++) {
-                builder.append(" ");
-            }
-            builder.append(word);
-            word = builder.toString();
-            startSpan = halfPoint + beginPad;
-            endSpan = startSpan + 1;
-        } else {
-            startSpan = CHARS_LEFT_OF_PIVOT;
-            endSpan = startSpan + 1;
-        }
-
-        Spannable spanRange = new SpannableString(word);
-        TextAppearanceSpan tas = new TextAppearanceSpan(textViewTarget.getContext(), R.style.PivotLetter);
-        spanRange.setSpan(tas, startSpan, endSpan, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        textViewTarget.setText(spanRange);
-    }
-
-
-    private int delayMultiplierForWord(String word)
-    {
-        // double rest if length > 6 or contains (.,!?)
-        if (word.length() >= 6 || word.contains(",") || word.contains(":") || word.contains(";") || word.contains(".") || word.contains("?") || word.contains("!") || word.contains("\""))
-        {
-            return 3;
-        }
-        return 1;
     }
 }
