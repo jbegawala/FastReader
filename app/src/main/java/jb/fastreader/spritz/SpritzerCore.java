@@ -17,7 +17,7 @@ class SpritzerCore
     static ArrayList<SpritzerWord> ProcessText(ArrayList<SpritzerWord> wordList, String input)
     {
         // Merge adjacent spaces and split on spaces
-        String[] wordArray = input.replaceAll("/\\s+/g", " ").split(" ");
+        String[] wordArray = input.replaceAll("/\\s+/g", " ").split("[ \\r\\n]");
 
         // Add words to queue
         String word;
@@ -47,7 +47,7 @@ class SpritzerCore
 
     private static void addWord(ArrayList<SpritzerWord> wordList, String word)
     {
-        if ( !word.isEmpty() )
+        if ( word != null && !word.isEmpty() )
         {
             wordList.add(new SpritzerWord(word));
         }
@@ -68,9 +68,9 @@ class SpritzerCore
 
         for ( int i = 0; i < word.length(); i = splitIndex)
         {
-            splitIndex = findSplitIndex(word);
+            splitIndex = findSplitIndex(word, i);
             String segment = word.substring(i, splitIndex);
-            if ( !wordContainsSplittingCharacter(segment) )
+            if ( !wordContainsSplittingCharacter(segment) && splitIndex < word.length() )
             {
                 segment += "-";
             }
@@ -86,40 +86,45 @@ class SpritzerCore
      *
      * @return the index on which to split the given String
      */
-    private static int findSplitIndex(String word)
+    private static int findSplitIndex(String word, int startingIndex)
     {
         int splitIndex;
 
-        // Split long words, at hyphen or dot if present.
-        if (word.contains("-"))
+        // leftover from previous word
+        if ( (word.length() - startingIndex) <= maxWordLength )
         {
-            splitIndex = word.indexOf("-") + 1;
+            splitIndex = word.length();
+        }
+        // Split long words, at hyphen or dot if present.
+        else if (word.contains("-"))
+        {
+            splitIndex = word.indexOf("-", startingIndex) + 1;
         }
         else if (word.contains("."))
         {
-            splitIndex = word.indexOf(".") + 1;
+            splitIndex = word.indexOf(".", startingIndex) + 1;
         }
-        else if (word.length() > maxWordLength * 2)
+        else if ((word.length() - startingIndex ) > (maxWordLength * 2) )
         {
-            splitIndex = maxWordLength - 1;
+            splitIndex = startingIndex + maxWordLength - 1;  // subtract one because hyphen will be added
         }
         else
         {
-            splitIndex = (word.length() +1 ) / 2;
+            splitIndex = startingIndex + (word.length() +1 ) / 2;
         }
 
-        // in case we found a split character that was > maxWordLength characters in.
-        if (splitIndex > maxWordLength)
-        {
-            // If we split the word at a splitting char like "-" or ".", we added one to the splitIndex
-            // in order to ensure the splitting char appears at the head of the split. Not accounting
-            // for this in the recursive call will cause a StackOverflowException
-            if ( wordContainsSplittingCharacter(word) )
-            {
-                splitIndex--;
-            }
-            return findSplitIndex(word.substring(0, splitIndex));
-        }
+//        // in case we found a split character that was > maxWordLength characters in.
+//        if (splitIndex > maxWordLength)
+//        {
+//            // If we split the word at a splitting char like "-" or ".", we added one to the splitIndex
+//            // in order to ensure the splitting char appears at the head of the split. Not accounting
+//            // for this in the recursive call will cause a StackOverflowException
+//            if ( wordContainsSplittingCharacter(word) )
+//            {
+//                splitIndex--;
+//            }
+//            return findSplitIndex(word.substring(startingIndex, splitIndex), 0);
+//        }
         return splitIndex;
     }
 

@@ -58,13 +58,12 @@ public class SpritzFragment extends Fragment
     private Switch speedQuickToggle;
 
     private TextView spritzHistoryView;
-    private SpritzerTextView spritzView;
+    private SpritzerTextView spritzerTextView;
     private Bus bus;
     private SpritzFragmentHandler mHandler;
 
     public SpritzFragment()
     {
-        // TODO should I initialize sprtizerApp?
 
     }
 
@@ -82,19 +81,19 @@ public class SpritzFragment extends Fragment
         }
 
         this.statusText = ((TextView) root.findViewById(R.id.statusText));
-        this.statusText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(spritzerApp.getMaxChapter() > 1) {
-                    bus.post(new ChapterSelectRequested());
-                }
-            }
-        });
+//        this.statusText.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(spritzerApp.getMaxChapter() > 1) {
+//                    bus.post(new ChapterSelectRequested());
+//                }
+//            }
+//        });
         this.statusVisual = ((ProgressBar) root.findViewById(R.id.statusVisual));
 
         this.spritzHistoryView = (TextView) root.findViewById(R.id.spritzHistory);
-        this.spritzView = (SpritzerTextView) root.findViewById(R.id.spritzText);
-        //spritzView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
+        this.spritzerTextView = (SpritzerTextView) root.findViewById(R.id.spritzText);
+        //spritzerTextView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
         //spritzHistoryView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
 
         this.speedQuickToggle = (Switch) root.findViewById(R.id.speedSwitch);
@@ -122,7 +121,7 @@ public class SpritzFragment extends Fragment
             }
         });
 
-        this.setupViews(this.spritzView, this.spritzHistoryView);
+        this.setupViews(this.spritzerTextView, this.spritzHistoryView);
 
         return root;
     }
@@ -157,8 +156,7 @@ public class SpritzFragment extends Fragment
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
             int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
 
-            spritzerApp = new Spritzer(this.bus, spritzView, wpm);
-            spritzView.setSpritzer(spritzerApp);
+            spritzerApp = new Spritzer(this.bus, spritzerTextView, wpm);
             if (spritzerApp.getMedia() == null)
             {
                 mHandler = new SpritzFragmentHandler(this);
@@ -173,7 +171,6 @@ public class SpritzFragment extends Fragment
         else
         {
             spritzerApp.setEventBus(this.bus);
-            spritzView.setSpritzer(spritzerApp);
             if (!spritzerApp.isPlaying())
             {
                 this.updateMetaInfo();
@@ -195,8 +192,7 @@ public class SpritzFragment extends Fragment
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
             int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
 
-            spritzerApp = new Spritzer(this.bus, this.spritzView, wpm, mediaUri);
-            this.spritzView.setSpritzer(spritzerApp);
+            spritzerApp = new Spritzer(this.bus, this.spritzerTextView, wpm, mediaUri);
             Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
         }
         else
@@ -234,19 +230,19 @@ public class SpritzFragment extends Fragment
         }
     }
 
-    private void startSpritzer()
-    {
-        this.hideMetaInfo();
-        this.hideActionBar();
-        spritzerApp.start(true, "startSpritzer");
-    }
-
     private void pauseSpritzer()
     {
         spritzerApp.pause("SpritzFragment.pauseSpritzer");
         this.updateMetaInfo();
         this.showMetaInfo();
         this.showActionBar();
+    }
+
+    private void startSpritzer()
+    {
+        this.hideMetaInfo();
+        this.hideActionBar();
+        spritzerApp.start(true, "startSpritzer");
     }
 
     private void hideMetaInfo()
@@ -257,7 +253,6 @@ public class SpritzFragment extends Fragment
         this.statusVisual.setVisibility(View.INVISIBLE);
         this.speedQuickToggle.setVisibility(View.INVISIBLE);
     }
-
     private void showMetaInfo()
     {
         this.contentTitle.setVisibility(View.VISIBLE);
@@ -357,29 +352,29 @@ public class SpritzFragment extends Fragment
             mWeakSpritzFragment = new WeakReference<SpritzFragment>(fragment);
         }
 
-        @Override
-        public void handleMessage(Message msg) {
-            int what = msg.what;
-            Object obj = msg.obj;
-
-            SpritzFragment spritzer = mWeakSpritzFragment.get();
-            if (spritzer == null) {
-                return;
-            }
-            switch (what) {
-                case MSG_HIDE_CHAPTER_LABEL:
-                    if (getActivity() != null) {
-                        if (spritzerApp != null && spritzerApp.isPlaying()) {
-                            spritzer.statusText.setVisibility(View.INVISIBLE);
-                        }
-                    }
-                    break;
-                case MSG_SPRITZ_TEXT:
-                    if (spritzerApp != null) {
-                        spritzerApp.setTextAndStart((String) obj, false);
-                    }
-                    break;
-            }
-        }
+//        @Override
+//        public void handleMessage(Message msg) {
+//            int what = msg.what;
+//            Object obj = msg.obj;
+//
+//            SpritzFragment spritzer = mWeakSpritzFragment.get();
+//            if (spritzer == null) {
+//                return;
+//            }
+//            switch (what) {
+//                case MSG_HIDE_CHAPTER_LABEL:
+//                    if (getActivity() != null) {
+//                        if (spritzerApp != null && spritzerApp.isPlaying()) {
+//                            spritzer.statusText.setVisibility(View.INVISIBLE);
+//                        }
+//                    }
+//                    break;
+//                case MSG_SPRITZ_TEXT:
+//                    if (spritzerApp != null) {
+//                        spritzerApp.setTextAndStart((String) obj, false);
+//                    }
+//                    break;
+//            }
+//        }
     }
 }

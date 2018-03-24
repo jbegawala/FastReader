@@ -43,7 +43,7 @@ public class SpritzTouchListener implements View.OnTouchListener
         this.spritzFragment = spritzFragment;
         this.historyView = historyView;
         this.params = historyView.getLayoutParams();
-        this.tapThreshold = 50;
+        this.tapThreshold = 100;
     }
 
     @Override
@@ -63,7 +63,6 @@ public class SpritzTouchListener implements View.OnTouchListener
         {
             if (event.getAction() == MotionEvent.ACTION_UP )  //&& !mAnimatingBack)
             {
-
                 if ( (event.getEventTime() - this.pressStart) < this.tapThreshold )
                 {
                     this.spritzFragment.userTap();

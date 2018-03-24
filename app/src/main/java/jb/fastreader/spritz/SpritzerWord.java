@@ -8,7 +8,7 @@ public class SpritzerWord
 {
     private String word;
     private int pivotPosition;
-    private int additionalDelay;
+    private int delayFactor;
 
     public SpritzerWord(String word)
     {
@@ -18,7 +18,7 @@ public class SpritzerWord
         }
 
         this.word = this.padWordAndFindPivot(word);
-        this.additionalDelay = this.delayMultiplierForWord(word);
+        this.delayFactor = this.delayMultiplierForWord(word);
     }
 
     private String padWordAndFindPivot(String word)
@@ -77,8 +77,8 @@ public class SpritzerWord
         return this.pivotPosition;
     }
 
-    int getAdditionalDelay()
+    int getDelayFactor()
     {
-        return this.additionalDelay;
+        return this.delayFactor;
     }
 }
