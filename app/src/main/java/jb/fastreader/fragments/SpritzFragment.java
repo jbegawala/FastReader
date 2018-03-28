@@ -33,7 +33,7 @@ import jb.fastreader.spritz.Spritzer;
 import jb.fastreader.FastReaderApplication;
 import jb.fastreader.R;
 import jb.fastreader.events.ChapterSelectRequested;
-import jb.fastreader.formats.ISpritzerMedia;
+import jb.fastreader.spritz.ISpritzerMedia;
 import jb.fastreader.spritz.SpritzerTextView;
 import jb.fastreader.Preferences;
 
@@ -299,7 +299,7 @@ public class SpritzFragment extends Fragment
         ISpritzerMedia content = spritzerApp.getMedia();
 
         this.contentTitle.setText(content.getTitle());
-        this.contentSubtitle.setText(content.getAuthor());
+        this.contentSubtitle.setText(content.getSubtitle());
 
         int progress = 0;
         String status = "";

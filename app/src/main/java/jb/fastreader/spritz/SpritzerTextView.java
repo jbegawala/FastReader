@@ -33,7 +33,7 @@ public class SpritzerTextView extends AppCompatTextView
     private Path topPivotPath;
     private Path bottomPivotPath;
 
-    private ArrayList<SpritzerWord> content = null;
+    private ISpritzerMedia content = null;
     private int contentIndex;
     private boolean isPlaying;
     private boolean isPlayingRequest;
@@ -59,7 +59,7 @@ public class SpritzerTextView extends AppCompatTextView
         init(attrs);
     }
 
-    void setContent(ArrayList<SpritzerWord> content)
+    void setContent(ISpritzerMedia content)
     {
         this.content = content;
         this.contentIndex = 0;
@@ -191,7 +191,7 @@ public class SpritzerTextView extends AppCompatTextView
     {
         // Measure the rendered distance of CHARS_LEFT_OF_PIVOT chars
         // plus half the pivot character
-        return this.calculateLengthOfPrintedMonospaceCharacters(SpritzerCore.CHARS_LEFT_OF_PIVOT + .50f);
+        return this.calculateLengthOfPrintedMonospaceCharacters(SpritzerMedia.CHARS_LEFT_OF_PIVOT + .50f);
     }
 
     void setSyncObject(Object spritzerThreadSync)
@@ -285,13 +285,13 @@ public class SpritzerTextView extends AppCompatTextView
 
     void showOneWord() throws InterruptedException
     {
-        if ( ++this.contentIndex >= this.content.size() )
+        if ( !this.content.hasNext() )
         {
             this.isPlayingRequest = false;
             return;
         }
 
-        SpritzerWord spritzerWord = this.content.get(this.contentIndex);
+        SpritzerWord spritzerWord = this.content.next();
 
         Spannable spanRange = new SpannableString(spritzerWord.getWord());
         TextAppearanceSpan tas = new TextAppearanceSpan(getContext(), R.style.PivotLetter);

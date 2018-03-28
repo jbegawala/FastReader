@@ -13,6 +13,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import jb.fastreader.http.TrustManager;
+import jb.fastreader.spritz.ISpritzerMedia;
+import jb.fastreader.spritz.SpritzerMedia;
 
 /**
  * This provides an implementation of {@link ISpritzerMedia}
@@ -20,7 +22,7 @@ import jb.fastreader.http.TrustManager;
  *
  * @author defer (diogo@underdev.org)
  */
-public class HtmlPage implements ISpritzerMedia
+public class HtmlPage extends SpritzerMedia
 {
     private static final String TAG = "HtmlPage";
     private String pageTitle;
@@ -90,6 +92,7 @@ public class HtmlPage implements ISpritzerMedia
      */
     private HtmlPage(JsonObject obj)
     {
+        super("","","");
         if (obj != null)
         {
             initFromJson(obj);
@@ -134,7 +137,7 @@ public class HtmlPage implements ISpritzerMedia
     }
 
     @Override
-    public String getAuthor()
+    public String getSubtitle()
     {
         try
         {
@@ -146,24 +149,6 @@ public class HtmlPage implements ISpritzerMedia
         catch (MalformedURLException e) {}  // Can't really do anything
 
         return "";
-    }
-
-    @Override
-    public String loadChapter(int ignored)
-    {
-        return (this.pageContent == null) ? "" : this.pageContent;
-    }
-
-    @Override
-    public String getChapterTitle(int ignored)
-    {
-        return "";  // TODO Should this be article title?
-    }
-
-    @Override
-    public int countChapters()
-    {
-        return 1;  // Only one chapter for articles
     }
 
 }

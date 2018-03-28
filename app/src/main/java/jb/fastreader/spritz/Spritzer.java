@@ -15,6 +15,7 @@ import jb.fastreader.Preferences;
 import jb.fastreader.R;
 import jb.fastreader.events.DummyParsedEvent;
 import jb.fastreader.formats.*;
+import jb.fastreader.spritz.ISpritzerMedia;
 
 // TODO: Save State
 public class Spritzer
@@ -191,8 +192,7 @@ public class Spritzer
             mCurWordIdx = 0;
             setWpm(state.getWpm());
             Log.i(TAG, "Loaded wpm at: " + state.getWpm());
-            content = this.loadCleanStringFromNextNonEmptyChapter(chapter);
-            this.spritzerTextView.setContent(SpritzerCore.ProcessText(this.media.loadChapter(0)));
+            this.spritzerTextView.setContent(this.media);
         }
 
 //        final String finalContent = content;
@@ -253,7 +253,7 @@ public class Spritzer
     }
 
     public int getMaxChapter() {
-        return (media == null) ? 0 : media.countChapters() - 1;
+        return (media == null) ? 0 : 1;
     }
 
     public boolean isMediaSelected() {
@@ -262,35 +262,35 @@ public class Spritzer
 
 
 
-    /**
-     * Load the given chapter as sanitized text, proceeding
-     * to the next chapter until a non-zero length result is found.
-     *
-     * This method is useful because some "Chapters" contain only HTML data
-     * that isn't useful to a SpritzerCore.
-     *
-     * @param chapter the first chapter to load
-     * @return the sanitized text of the first non-zero length chapter
-     */
-    private String loadCleanStringFromNextNonEmptyChapter(int chapter) {
-        int chapterToTry = chapter;
-        String result = "";
-        while(result.length() == 0 && chapterToTry <= getMaxChapter()) {
-            result = loadCleanStringFromChapter(chapterToTry);
-            chapterToTry++;
-        }
-        return result;
-    }
+//    /**
+//     * Load the given chapter as sanitized text, proceeding
+//     * to the next chapter until a non-zero length result is found.
+//     *
+//     * This method is useful because some "Chapters" contain only HTML data
+//     * that isn't useful to a SpritzerCore.
+//     *
+//     * @param chapter the first chapter to load
+//     * @return the sanitized text of the first non-zero length chapter
+//     */
+//    private String loadCleanStringFromNextNonEmptyChapter(int chapter) {
+//        int chapterToTry = chapter;
+//        String result = "";
+//        while(result.length() == 0 && chapterToTry <= getMaxChapter()) {
+//            result = loadCleanStringFromChapter(chapterToTry);
+//            chapterToTry++;
+//        }
+//        return result;
+//    }
 
-    /**
-     * Load the given chapter as sanitized text.
-     *
-     * @param chapter the target chapter.
-     * @return the sanitized chapter text.
-     */
-    private String loadCleanStringFromChapter(int chapter) {
-        return media.loadChapter(chapter);
-    }
+//    /**
+//     * Load the given chapter as sanitized text.
+//     *
+//     * @param chapter the target chapter.
+//     * @return the sanitized chapter text.
+//     */
+//    private String loadCleanStringFromChapter(int chapter) {
+//        return media.loadChapter(chapter);
+//    }
 
 
     private void reportFileUnsupported()

@@ -2,22 +2,38 @@ package jb.fastreader.spritz;
 
 import java.util.ArrayList;
 
-class SpritzerCore
+/**
+ * Created by jb on 3/27/18.
+ */
+
+public abstract class SpritzerMedia implements ISpritzerMedia
 {
     static final int CHARS_LEFT_OF_PIVOT = 3;
     static final int LONG_WORD_DELAY_THRESHOLD = 8;
 
     private static int maxWordLength = 13;
+    private String title;
+    private String subtitle;
+    private ArrayList<SpritzerWord> content;
+    private int contentIndex;  // index of text to show next
+    private int contentLength;
 
-    static ArrayList<SpritzerWord> ProcessText(String input)
+    private int wordCount;
+
+    public SpritzerMedia(String title, String subtitle, String content)
     {
-        return ProcessText(new ArrayList<SpritzerWord>(), input);
+        this.title = title;
+        this.subtitle = subtitle;
+        this.processText(content);
     }
 
-    static ArrayList<SpritzerWord> ProcessText(ArrayList<SpritzerWord> wordList, String input)
+    private void processText(String input)
     {
+        ArrayList<SpritzerWord> wordList = new ArrayList<>();
+
         // Merge adjacent spaces and split on spaces
         String[] wordArray = input.replaceAll("/\\s+/g", " ").split("[ \\r\\n]");
+        this.wordCount = wordArray.length;
 
         // Add words to queue
         String word;
@@ -34,7 +50,9 @@ class SpritzerCore
             }
         }
 
-        return wordList;
+        this.content = wordList;
+        this.contentIndex = 0;
+        this.contentLength = wordList.size();
     }
 
     private static void addWord(ArrayList<SpritzerWord> wordList, String[] words)
@@ -131,5 +149,36 @@ class SpritzerCore
     private static boolean wordContainsSplittingCharacter(String word)
     {
         return (word.contains(".") || word.contains("-"));
+    }
+
+
+    @Override
+    public String getTitle()
+    {
+        return this.title;
+    }
+
+    @Override
+    public String getSubtitle()
+    {
+        return this.subtitle;
+    }
+
+    @Override
+    public int getWordCount()
+    {
+        return this.wordCount;
+    }
+
+    @Override
+    public boolean hasNext()
+    {
+        return ( this.contentIndex < this.contentLength );
+    }
+
+    @Override
+    public SpritzerWord next()
+    {
+        return this.content.get(this.contentIndex++);
     }
 }
