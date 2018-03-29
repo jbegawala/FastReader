@@ -3,7 +3,7 @@ package jb.fastreader.spritz;
 import java.util.ArrayList;
 
 /**
- * Created by jb on 3/27/18.
+ * Created by Junaid Begawala on 3/27/18.
  */
 
 public abstract class SpritzerMedia implements ISpritzerMedia
@@ -18,8 +18,15 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     private int contentIndex;  // index of text to show next
     private int contentLength;
 
+    private int wordIndex;  // number of words shown to user including current word
     private int wordCount;
 
+    /**
+     * Creates media object
+     * @param title Title of content
+     * @param subtitle Subtitle of content, typically author or url
+     * @param content A string without any markup or formatting
+     */
     public SpritzerMedia(String title, String subtitle, String content)
     {
         this.title = title;
@@ -27,12 +34,18 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         this.processText(content);
     }
 
+    /**
+     * Processes content into an array of strings to flash to user. Long words will be spread
+     * out over multiple entries.
+     * @param input A string without any markup or formatting
+     */
     private void processText(String input)
     {
         ArrayList<SpritzerWord> wordList = new ArrayList<>();
 
         // Merge adjacent spaces and split on spaces
         String[] wordArray = input.replaceAll("/\\s+/g", " ").split("[ \\r\\n]");
+        this.wordIndex = 0;
         this.wordCount = wordArray.length;
 
         // Add words to queue
@@ -46,7 +59,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
             }
             else
             {
-                addWord(wordList, word);
+                addWord(wordList, word, true);
             }
         }
 
@@ -55,27 +68,37 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         this.contentLength = wordList.size();
     }
 
+    /**
+     * Generates an array of {@link SpritzerWord} from given string array
+     * @param wordList Array of {@link SpritzerWord} to add to
+     * @param words String array with words to add
+     */
     private static void addWord(ArrayList<SpritzerWord> wordList, String[] words)
     {
         for (int i = 0; i < words.length; i++ )
         {
-            addWord(wordList, words[i]);
-        }
-    }
-
-    private static void addWord(ArrayList<SpritzerWord> wordList, String word)
-    {
-        if ( word != null && !word.isEmpty() )
-        {
-            wordList.add(new SpritzerWord(word));
+            addWord(wordList, words[i], (i == 0));
         }
     }
 
     /**
-     * Split the given String if appropriate and
-     * add the tail of the split to the head of
-     *
-     * @return array of word pieces
+     * Generates a {@link SpritzerWord} from given string
+     * @param wordList Array of {@link SpritzerWord} to add to
+     * @param word String to add
+     * @param isNewWord True if given string is the start of a word, false otherwise
+     */
+    private static void addWord(ArrayList<SpritzerWord> wordList, String word, boolean isNewWord)
+    {
+        if ( word != null && !word.isEmpty() )
+        {
+            wordList.add(new SpritzerWord(word, isNewWord));
+        }
+    }
+
+    /**
+     * Splits the given string into an array based on the {@link #maxWordLength}. Some entries
+     * in the array can be empty.
+     * @return String array of word segments
      */
     private static String[] splitLongWord(String word)
     {
@@ -88,7 +111,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         {
             splitIndex = findSplitIndex(word, i);
             String segment = word.substring(i, splitIndex);
-            if ( !wordContainsSplittingCharacter(segment) && splitIndex < word.length() )
+            if ( splittingCharacterIndex(segment) == -1 && splitIndex < word.length() )
             {
                 segment += "-";
             }
@@ -99,58 +122,76 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     }
 
     /**
-     * Determine the split index on a given String
-     * e.g If it exceeds maxWordLength or contains a hyphen
-     *
-     * @return the index on which to split the given String
+     * Calculates where to split the given string.
+     * @return The position on which to split the given string
      */
     private static int findSplitIndex(String word, int startingIndex)
     {
-        int splitIndex;
-
-        // leftover from previous word
+        // Leftover from previous word
         if ( (word.length() - startingIndex) <= maxWordLength )
         {
-            splitIndex = word.length();
-        }
-        // Split long words, at hyphen or dot if present.
-        else if (word.contains("-"))
-        {
-            splitIndex = word.indexOf("-", startingIndex) + 1;
-        }
-        else if (word.contains("."))
-        {
-            splitIndex = word.indexOf(".", startingIndex) + 1;
-        }
-        else if ((word.length() - startingIndex ) > (maxWordLength * 2) )
-        {
-            splitIndex = startingIndex + maxWordLength - 1;  // subtract one because hyphen will be added
-        }
-        else
-        {
-            splitIndex = startingIndex + (word.length() +1 ) / 2;
+            return word.length();
         }
 
-//        // in case we found a split character that was > maxWordLength characters in.
-//        if (splitIndex > maxWordLength)
-//        {
-//            // If we split the word at a splitting char like "-" or ".", we added one to the splitIndex
-//            // in order to ensure the splitting char appears at the head of the split. Not accounting
-//            // for this in the recursive call will cause a StackOverflowException
-//            if ( wordContainsSplittingCharacter(word) )
-//            {
-//                splitIndex--;
-//            }
-//            return findSplitIndex(word.substring(startingIndex, splitIndex), 0);
-//        }
-        return splitIndex;
+        // Split at splitting character if present
+        int splitIndex = splittingCharacterIndex(word, startingIndex);
+        if ( 0 <= splitIndex )
+        {
+            return splitIndex + 1;
+        }
+
+        // Split at full length if word is long enough
+        if ((word.length() - startingIndex ) > (maxWordLength * 2) )
+        {
+            return startingIndex + maxWordLength - 1;  // subtract one because hyphen will be added
+        }
+
+        // Split in the middle
+        return startingIndex + (word.length() + 1) / 2;
     }
 
+    /**
+     * Determines whether the given string contains a character to split h
+     * @param word
+     * @return
+     */
     private static boolean wordContainsSplittingCharacter(String word)
     {
         return (word.contains(".") || word.contains("-"));
     }
 
+    /**
+     * Determines whether the given string contains a character to split on
+     * @param word String to check
+     * @return The index of the first occurrence of a split character, or -1 if there is no such
+     * occurrence.
+     */
+    private static int splittingCharacterIndex(String word)
+    {
+        return splittingCharacterIndex(word, 0);
+    }
+
+    /**
+     * Determines whether the given string contains a character to split on
+     * @param word String to check
+     * @param startingIndex The index from which to start the search
+     * @return The index of the first occurrence of a split character, starting at the specified
+     * index, or -1 if there is no such occurrence.
+     */
+    private static int splittingCharacterIndex(String word, int startingIndex)
+    {
+        int index = word.indexOf("-", startingIndex);
+        if ( 0 <= index )
+        {
+            return index;
+        }
+        index = word.indexOf(".", startingIndex);
+        if ( 0 <= index )
+        {
+            return index;
+        }
+        return -1;
+    }
 
     @Override
     public String getTitle()
@@ -171,6 +212,12 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     }
 
     @Override
+    public int getWordIndex()
+    {
+        return this.wordIndex;
+    }
+
+    @Override
     public boolean hasNext()
     {
         return ( this.contentIndex < this.contentLength );
@@ -179,6 +226,11 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     @Override
     public SpritzerWord next()
     {
-        return this.content.get(this.contentIndex++);
+        SpritzerWord spritzerWord = this.content.get(this.contentIndex++);
+        if ( spritzerWord.isNewWord() )
+        {
+            this.wordIndex++;
+        }
+        return spritzerWord;
     }
 }

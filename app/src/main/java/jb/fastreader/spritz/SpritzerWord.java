@@ -13,12 +13,13 @@ class SpritzerWord
     private String word;
     private int pivotPosition;
     private int delayFactor;
+    private boolean isNewWord;
 
     /**
      * Creates an object that holds a short string that is flashed to the user
      * @param word String to flash
      */
-    SpritzerWord(String word)
+    SpritzerWord(String word, boolean isNewWord)
     {
         if ( word.isEmpty() )
         {
@@ -28,6 +29,7 @@ class SpritzerWord
 
         this.word = this.padWordAndFindPivot(word);
         this.delayFactor = delayMultiplierForWord(word);
+        this.isNewWord = isNewWord;
     }
 
     /**
@@ -104,5 +106,10 @@ class SpritzerWord
     int getDelayFactor()
     {
         return this.delayFactor;
+    }
+
+    boolean isNewWord()
+    {
+        return this.isNewWord;
     }
 }

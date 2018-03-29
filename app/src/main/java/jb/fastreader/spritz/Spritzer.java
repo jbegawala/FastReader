@@ -240,12 +240,12 @@ public class Spritzer
 
     public int getCurrentWordNumber()
     {
-        return 10;
+        return this.media.getWordIndex();
     }
 
     public int getWordCount()
     {
-        return 30;
+        return this.media.getWordCount();
     }
 
     public int getCurrentChapter() {
