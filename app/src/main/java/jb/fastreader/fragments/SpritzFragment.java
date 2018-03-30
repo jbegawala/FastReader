@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -56,6 +57,7 @@ public class SpritzFragment extends Fragment
     private TextView statusText;
     private ProgressBar statusVisual;
     private Switch speedQuickToggle;
+    private ImageView playButtonView;
 
     private TextView spritzHistoryView;
     private SpritzerTextView spritzerTextView;
@@ -121,6 +123,12 @@ public class SpritzFragment extends Fragment
             }
         });
 
+        this.playButtonView = (ImageView) root.findViewById(R.id.playButtonView);
+
+        SpritzTouchListener touchListener = new SpritzTouchListener(this, this.spritzHistoryView);
+        this.spritzerTextView.setOnTouchListener(touchListener);
+        this.playButtonView.setOnTouchListener(touchListener);
+
         this.setupViews(this.spritzerTextView, this.spritzHistoryView);
 
         return root;
@@ -138,7 +146,6 @@ public class SpritzFragment extends Fragment
             }
         });
 
-        touchTarget.setOnTouchListener(new SpritzTouchListener(this, historyView));
     }
 
     @Override
@@ -200,14 +207,10 @@ public class SpritzFragment extends Fragment
             spritzerApp.setMediaUri(mediaUri);
             Log.i(TAG, "feedMediaUriToSpritzer called with existing spritzerApp");
         }
-
-        String configWpm = getResources().getString(R.string.config_key_wpm);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        this.pauseSpritzer();
 //        Log.i(TAG, "configwpm: " + configWpm);
 //        int wpm = prefs.getInt("config_key_wpm",300);
 //        Log.i(TAG, " Set WPM to: " + wpm);
-        int wpm = Preferences.DEFAULT_APP_WPM;
-        spritzerApp.setWpm(wpm);
 //        Commenting out because synchronous call
 //        if (Spritzer.isHttpUri(mediaUri))
 //        {
@@ -235,12 +238,16 @@ public class SpritzFragment extends Fragment
         spritzerApp.pause("SpritzFragment.pauseSpritzer");
         this.updateMetaInfo();
         this.showMetaInfo();
+        this.spritzerTextView.setVisibility(View.INVISIBLE);
+        this.playButtonView.setVisibility(View.VISIBLE);
         this.showActionBar();
     }
 
     private void startSpritzer()
     {
         this.hideMetaInfo();
+        this.spritzerTextView.setVisibility(View.VISIBLE);
+        this.playButtonView.setVisibility(View.INVISIBLE);
         this.hideActionBar();
         spritzerApp.start(true, "startSpritzer");
     }

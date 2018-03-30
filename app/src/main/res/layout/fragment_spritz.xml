@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
@@ -12,26 +13,25 @@
         style="@style/SubduedTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:paddingTop="16dp"
         android:layout_marginLeft="@dimen/spritzer_title_margin_left"
+        android:ellipsize="marquee"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:ellipsize="marquee"
-        android:textSize="@dimen/spritzer_title_text_size" />
+        android:textSize="@dimen/spritzer_title_text_size"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:id="@+id/contentSubtitle"
         style="@style/UltraSubduedTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:layout_alignLeft="@id/contentTitle"
         android:layout_below="@id/contentTitle"
         android:ellipsize="marquee"
         android:maxLines="1"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:textSize="@dimen/spritzer_author_text_size" />
 
     <TextView
@@ -39,23 +39,23 @@
         style="@style/SubduedTextStyle"
         android:layout_width="@dimen/spritzer_text_view_width"
         android:layout_height="10dp"
-        android:gravity="bottom|start"
-        android:alpha="0"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/spritzer_top_margin"
-        android:typeface="monospace"
-        android:textSize="@dimen/spritzer_history_text_size" />
+        android:alpha="0"
+        android:gravity="bottom|start"
+        android:textSize="@dimen/spritzer_history_text_size"
+        android:typeface="monospace" />
 
     <TextView
         android:id="@+id/spritzHistoryCurtain"
         android:layout_width="wrap_content"
         android:layout_height="18dip"
-        android:layout_alignTop="@id/spritzHistory"
         android:layout_alignLeft="@id/spritzHistory"
         android:layout_alignRight="@id/spritzHistory"
+        android:layout_alignTop="@id/spritzHistory"
+        android:background="?attr/spritz_history_curtain"
         android:gravity="center_horizontal"
-        android:textColor="?attr/ultra_subdued_text"
-        android:background="?attr/spritz_history_curtain" />
+        android:textColor="?attr/ultra_subdued_text" />
 
     <jb.fastreader.spritz.SpritzerTextView
         android:id="@+id/spritzText"
@@ -87,7 +87,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/statusVisual"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginBottom="@dimen/chapter_margin"
         android:layout_marginLeft="@dimen/chapter_margin"
         android:clickable="true"
@@ -103,4 +103,14 @@
         android:checked="true"
         android:textOff="@string/toggle_speed_slow"
         android:textOn="@string/toggle_speed_fast" />
+
+    <ImageView
+        android:id="@+id/playButtonView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="80dp"
+        android:minWidth="80dp"
+        android:src="@android:drawable/ic_media_play"
+        android:layout_below="@+id/spritzHistory"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
