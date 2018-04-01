@@ -106,6 +106,7 @@
 
     <ImageView
         android:id="@+id/playButtonView"
+        android:contentDescription="@string/playButton_contentDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="80dp"
@@ -113,4 +114,14 @@
         android:src="@android:drawable/ic_media_play"
         android:layout_below="@+id/spritzHistory"
         android:layout_centerHorizontal="true" />
+
+    <ProgressBar
+        android:id="@+id/loadingIcon"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/playButtonView"
+        android:layout_below="@+id/spritzHistory"
+        android:minHeight="80dp"
+        android:minWidth="80dp" />
 </RelativeLayout>

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 
 
 /**
@@ -30,6 +31,13 @@ public class Preferences
     public static int getTheme(Context context)
     {
         return context.getSharedPreferences(UI_PREFS, Context.MODE_PRIVATE).getInt(UI_THEME, 1);
+    }
+
+    public static boolean useDummyArticle(Context context)
+    {
+        Resources resources = context.getResources();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPreferences.getBoolean(resources.getString(R.string.config_dev_source_key), true);
     }
 
     public static void setTheme(Context context, int theme)

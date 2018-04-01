@@ -1,96 +1,101 @@
 package jb.fastreader.spritz;
 
-import android.content.UriPermission;
 import android.net.Uri;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.squareup.otto.Bus;
 
-import java.util.List;
+import org.json.JSONObject;
 
+import cz.msebera.android.httpclient.Header;
 import jb.fastreader.Preferences;
 import jb.fastreader.R;
-import jb.fastreader.events.DummyParsedEvent;
 import jb.fastreader.formats.*;
-import jb.fastreader.spritz.ISpritzerMedia;
 
-// TODO: Save State
 public class Spritzer
 {
+    public enum BusEvent
+    {
+        CONTENT_PARSED
+    }
 
-    static final int MSG_PRINT_WORD = 1;
-    static final int MSG_SET_ENABLED = 2;
-    public static final int SPECIAL_MESSAGE_WPM = 100;
-    public static final String TAG = Spritzer.class.getSimpleName();
+    public enum MediaParseStatus
+    {
+        NOT_STARTED,
+        IN_PROGRESS,
+        COMPLETE
+    }
+
+    private static final String TAG = Spritzer.class.getSimpleName();
 
     private final Object spritzerThreadSync = new Object();
-    private int chapter;
-    private ISpritzerMedia media;
-    private Uri mMediaUri;
-    private boolean mSpritzingSpecialMessage;
-    private Handler spritzHandler;
-    private Bus bus;
+    private final Object mediaStatusSync = new Object();
 
-    private boolean spritzThreadStarted;
+    private Bus bus;
+    private ISpritzerMedia media;
+    private MediaParseStatus mediaParseStatus;
     private SpritzerTextView spritzerTextView;
-    private int mCurWordIdx;
 
     public Spritzer(Bus bus, TextView spritzerTextView, int wpm)
     {
+        Log.v(TAG, "Constructor");
         this.spritzerTextView = (SpritzerTextView) spritzerTextView;
         this.spritzerTextView.setSyncObject(this.spritzerThreadSync);
         this.spritzerTextView.setWpm(wpm);
-        setEventBus(bus);
-        restoreState(true);
-        Log.v(TAG, "Constructor 1");
-        //this.spritzHandler = new SpritzHandler(this);
+        this.bus = bus;
+        this.mediaParseStatus = MediaParseStatus.NOT_STARTED;
     }
 
-    public Spritzer(Bus bus, TextView spritzerTextView, int wpm, Uri mediaUri)
+    public void openMedia(Uri uri)
     {
-        this.spritzerTextView = (SpritzerTextView) spritzerTextView;
-        this.spritzerTextView.setSyncObject(this.spritzerThreadSync);
-        this.spritzerTextView.setWpm(wpm);
-        setEventBus(bus);
-        openMedia(mediaUri);
-        Log.v(TAG, "Constructor 2");
-        //this.spritzHandler = new SpritzHandler(this);
+        this.pause();
+
+        if ( isHttpUri(uri) )
+        {
+            synchronized ( this.mediaStatusSync )
+            {
+                this.mediaParseStatus = MediaParseStatus.IN_PROGRESS;
+            }
+            if ( Preferences.useDummyArticle(this.spritzerTextView.getContext()) )
+            {
+                this.media = new DummyHtmlPage();
+                synchronized ( this.mediaStatusSync )
+                {
+                    this.mediaParseStatus = MediaParseStatus.COMPLETE;
+                }
+                this.spritzerTextView.setContent(this.media);
+                this.bus.post(BusEvent.CONTENT_PARSED);
+            }
+            else
+            {
+                this.sendToBoilerPipe(uri);
+            }
+        }
+        else
+        {
+            this.reportFileUnsupported();
+        }
     }
 
-    public void setMediaUri(Uri uri) {
-        pause("setMediaUri");
-        openMedia(uri);
-    }
-
-    /**
-     * Start displaying the String input
-     * fed to
-     */
-    public void start(boolean fireFinishEvent, String source)
+    public void start()
     {
-        Log.i(TAG, "start1 called from " + source);
-        this.start(null, fireFinishEvent);
-    }
-
-    /**
-     * Start displaying the String input
-     * fed to
-     *
-     * @param cb callback to be notified when SpritzerCore finished.
-     *           Called from background thread.
-     */
-    public void start(ISpritzerCallback cb, boolean fireFinishEvent)
-    {
+        Log.i(TAG, "start");
         this.spritzerTextView.play();
     }
 
-    public void pause(String info)
+    public void pause()
     {
-        Log.i(TAG, "pause: Pausing spritzer from " + info);
+        if ( !this.spritzerTextView.isPlaying() )
+        {
+            return;
+        }
 
+        Log.i(TAG, "pause");
         this.spritzerTextView.pause();
 
         synchronized ( this.spritzerThreadSync )
@@ -114,128 +119,91 @@ public class Spritzer
         return this.spritzerTextView.isPlaying();
     }
 
-    private void openMedia(Uri uri)
+
+
+    private void sendToBoilerPipe(Uri uri)
     {
-        if (isHttpUri(uri))
+        final AsyncHttpClient client = new AsyncHttpClient();
+        String getMethod = "http://boilerpipe-web.appspot.com/extract";
+        RequestParams params = new RequestParams();
+        params.put("url", uri.toString());
+        params.put("extractor", "ArticleExtractor");
+        params.put("output", "json");
+        client.get(getMethod, params, new JsonHttpResponseHandler()
         {
-            mMediaUri = uri;
-            // TODO why can't this just instantiate object? does callback not work in that context?
-//            media = HtmlPage.fromUri(spritzerTextView.getContext().getApplicationContext(), uri.toString(), new IHtmlPageParsedCallback() {
-//                @Override
-//                public void onPageParsed(HtmlPage result) {
-//                    restoreState(false);
-//                    if (bus != null) {
-//                        bus.post(new HttpUrlParsedEvent(result));
-//                    }
-//                }
-//            });
-            this.media = new DummyHtmlPage();
-            restoreState(false);
-            if ( bus != null )
-            {
-                bus.post(new DummyParsedEvent((DummyHtmlPage) this.media));
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                // Root JSON in response is an dictionary i.e { "data : [ ... ] }
+                // Handle resulting parsed JSON response here
+                Log.i("Webservice success", response.toString());
+
+                String title = "";
+                String subtitle = "";
+                String content = "";
+                JSONObject parsedResponse;
+                try {
+                    parsedResponse = response.getJSONObject("response");
+                    title = parsedResponse.getString("title");
+                    subtitle = parsedResponse.getString("source");
+                    content = parsedResponse.getString("content");
+                } catch (Exception e) {
+
+                } finally {
+                    if (title == null || title.isEmpty()) {
+                        title = "Error";
+                    }
+                    if (subtitle == null || subtitle.isEmpty()) {
+                        subtitle = "Error";
+                    }
+                    if (content == null || content.isEmpty()) {
+                        content = "Error";
+                    }
+                }
+
+                media = new HtmlPage(title, subtitle, content);
+                spritzerTextView.setContent(media);
+
+                synchronized (mediaStatusSync)
+                {
+                    mediaParseStatus = MediaParseStatus.COMPLETE;
+                }
+
+                bus.post(BusEvent.CONTENT_PARSED);
             }
-        }
-        else
-        {
-            reportFileUnsupported();
-        }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String res, Throwable t) {
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+                Log.i("Webservice fail", res);
+            }
+        });
     }
 
-
+    // TODO: Save State with SpritzerMedia
     public void saveState()
     {
-        // no point in saving article state, is there?
-        if (this.media != null)
-        {
-            Log.i(TAG, "Saving state at chapter " + chapter + " word: " + mCurWordIdx);
-            Preferences.saveState(this.spritzerTextView.getContext(), chapter, mMediaUri.toString(), mCurWordIdx, media.getTitle(), this.spritzerTextView.getWpm());
-        }
-    }
-
-    private void restoreState(boolean openLastMediaUri) {
-        final Preferences.SpritzState state = Preferences.getState(this.spritzerTextView.getContext());
-        String content = "";
-        if (openLastMediaUri) {
-            // Open the last selected media
-            if (state.hasUri()) {
-                Uri mediaUri = state.getUri();
-                if (!isHttpUri(mediaUri)) {
-                    boolean uriPermissionPersisted = false;
-                    List<UriPermission> uriPermissions = this.spritzerTextView.getContext().getContentResolver().getPersistedUriPermissions();
-                    for (UriPermission permission : uriPermissions) {
-                        if (permission.getUri().equals(mediaUri)) {
-                            uriPermissionPersisted = true;
-                            openMedia(mediaUri);
-                            break;
-                        }
-                    }
-                    if (!uriPermissionPersisted) {
-                        Log.w(TAG, String.format("Permission not persisted for uri: %s. Clearing SharedPreferences ", mediaUri.toString()));
-                        Preferences.clearState(this.spritzerTextView.getContext());
-                        return;
-                    }
-                } else {
-                    openMedia(mediaUri);
-                }
-            }
-//        } else if (state.hasTitle() && media.getTitle().compareTo(state.getTitle()) == 0) {
-//            // Resume media at previous point
-//            chapter = state.getChapter();
-//            content = this.loadCleanStringFromNextNonEmptyChapter(chapter);
-//            setWpm(state.getWpm());
-//            mCurWordIdx = state.getWordIdx();
-//            Log.i(TAG, "Resuming " + media.getTitle() + " from chapter " + chapter + " word " + mCurWordIdx);
-        } else {
-            // Begin content anew
-            chapter = 0;
-            mCurWordIdx = 0;
-            setWpm(state.getWpm());
-            Log.i(TAG, "Loaded wpm at: " + state.getWpm());
-            this.spritzerTextView.setContent(this.media);
-        }
-
-//        final String finalContent = content;
-//        if ( !this.isPlaying() )
+//        // no point in saving article state, is there?
+//        if (this.media != null)
 //        {
-//            this.spritzerTextView.setEnabled(true);
-//
-//            //this.pause();
-//            //this.setText(this.spritzerTextView.getContext().getString(R.string.touch_to_start));
-//
-//            this.start(false, "SPritzer");
-////            this.start( new ISpritzerCallback() {
-////                @Override
-////                public void onSpritzerFinished() {
-////                    setText(finalContent);
-////                    setWpm(state.getWpm());
-////                    spritzHandler.sendMessage(spritzHandler.obtainMessage(MSG_SET_ENABLED));
-////                }
-////            }, false);
+//            Log.i(TAG, "Saving state at chapter " + chapter + " word: " + mCurWordIdx);
+//            Preferences.saveState(this.spritzerTextView.getContext(), chapter, mediaUri.toString(), mCurWordIdx, media.getTitle(), this.spritzerTextView.getWpm());
 //        }
     }
+
 
     public void setWpm(int wpm)
     {
         this.spritzerTextView.setWpm(wpm);
     }
 
-    /**
-     * Pass a Bus to receive events on, such as
-     * when the display of a given String is finished
-     *
-     * @param bus
-     */
-    public void setEventBus(Bus bus)
-    {
-        this.bus = bus;
-    }
-    public boolean isSpritzingSpecialMessage() {
-        return mSpritzingSpecialMessage;
-    }
 
     public ISpritzerMedia getMedia() {
         return media;
+    }
+
+    public MediaParseStatus getMediaParseStatus()
+    {
+        return this.mediaParseStatus;
     }
 
     public int getCurrentWordNumber()
@@ -246,14 +214,6 @@ public class Spritzer
     public int getWordCount()
     {
         return this.media.getWordCount();
-    }
-
-    public int getCurrentChapter() {
-        return chapter;
-    }
-
-    public int getMaxChapter() {
-        return (media == null) ? 0 : 1;
     }
 
     public boolean isMediaSelected() {
@@ -298,17 +258,22 @@ public class Spritzer
         Toast.makeText(this.spritzerTextView.getContext(), this.spritzerTextView.getContext().getString(R.string.unsupported_file), Toast.LENGTH_LONG).show();
     }
 
-    public static boolean isHttpUri(Uri uri)
+    public static boolean isUriSupported(Uri uri)
+    {
+        return ( uri != null && isHttpUri(uri) );
+    }
+
+    private static boolean isHttpUri(Uri uri)
     {
         return uri.getScheme() != null && uri.getScheme().contains("http");
     }
 
-    /**
-     * Return a String representing the maxChars most recently
-     * Spritzed characters.
-     *
-     * @param maxChars The max number of characters to return. Pass a value less than 1 for no limit.
-     * @return The maxChars number of most recently spritzed characters during this segment
+//    /**
+//     * Return a String representing the maxChars most recently
+//     * Spritzed characters.
+//     *
+//     * @param maxChars The max number of characters to return. Pass a value less than 1 for no limit.
+//     * @return The maxChars number of most recently spritzed characters during this segment
 //     */
 //    public String getHistoryString(int maxChars) {
 //        if (maxChars <= 0) maxChars = Integer.MAX_VALUE;

@@ -4,12 +4,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-//import com.facebook.rebound.SimpleSpringListener;
-//import com.facebook.rebound.Spring;
-//import com.facebook.rebound.SpringSystem;
 
 /**
- * Created by jb on 3/21/18.
+ * Created by Junaid Begawala on 3/21/18.
  */
 
 public class SpritzTouchListener implements View.OnTouchListener

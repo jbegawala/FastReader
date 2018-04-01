@@ -24,6 +24,5 @@
     public *;
 }
 
--dontwarn com.facebook.**
 -dontwarn org.slf4j.**
 -dontwarn sun.misc.Unsafe

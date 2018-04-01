@@ -50,4 +50,11 @@
     <string name="config_wpm_slow_desc">The WPM to use for slow speed</string>
     <string name="config_wpm_slow_key">config_wpm_slow</string>
     <string name="config_wpm_slow_default">300</string>
+    <string name="config_cat_dev">Development</string>
+    <string name="config_dev_source">Use dummy article</string>
+    <string name="config_dev_source_desc">Check this option to use dummy article content instead of using a webservice</string>
+    <string name="config_dev_source_key">config_dev_source</string>
+    <string name="error_could_not_parse_uri">Could not parse URI: </string>
+    <string name="error_unsupported_uri">Unsupported URI: </string>
+    <string name="playButton_contentDescription">Press to begin playback</string>
 </resources>

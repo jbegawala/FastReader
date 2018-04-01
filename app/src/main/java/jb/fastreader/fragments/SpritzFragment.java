@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -19,7 +18,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -27,16 +25,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import java.lang.ref.WeakReference;
 
 import jb.fastreader.spritz.Spritzer;
 import jb.fastreader.FastReaderApplication;
 import jb.fastreader.R;
-import jb.fastreader.events.ChapterSelectRequested;
 import jb.fastreader.spritz.ISpritzerMedia;
 import jb.fastreader.spritz.SpritzerTextView;
-import jb.fastreader.Preferences;
+
+import android.widget.Toast;
 
 
 // Main fragment
@@ -44,12 +43,7 @@ public class SpritzFragment extends Fragment
 {
     private static final String TAG = SpritzFragment.class.getSimpleName();
 
-    // SpritzFragmentHandler Message codes
-    protected static final int MSG_SPRITZ_TEXT = 1;
-    protected static final int MSG_HIDE_CHAPTER_LABEL = 2;
-
     private Spritzer spritzerApp;
-    static float initHeight;
 
     // Meta UI components
     private TextView contentTitle;
@@ -58,20 +52,19 @@ public class SpritzFragment extends Fragment
     private ProgressBar statusVisual;
     private Switch speedQuickToggle;
     private ImageView playButtonView;
+    private ProgressBar loadingIcon;
 
     private TextView spritzHistoryView;
     private SpritzerTextView spritzerTextView;
     private Bus bus;
     private SpritzFragmentHandler mHandler;
 
-    public SpritzFragment()
-    {
-
-    }
+    public SpritzFragment() { }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+        Log.i(TAG, "onCreateView: start");
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_spritz, container, false);
 
@@ -83,14 +76,6 @@ public class SpritzFragment extends Fragment
         }
 
         this.statusText = ((TextView) root.findViewById(R.id.statusText));
-//        this.statusText.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(spritzerApp.getMaxChapter() > 1) {
-//                    bus.post(new ChapterSelectRequested());
-//                }
-//            }
-//        });
         this.statusVisual = ((ProgressBar) root.findViewById(R.id.statusVisual));
 
         this.spritzHistoryView = (TextView) root.findViewById(R.id.spritzHistory);
@@ -124,101 +109,81 @@ public class SpritzFragment extends Fragment
         });
 
         this.playButtonView = (ImageView) root.findViewById(R.id.playButtonView);
+        this.loadingIcon = (ProgressBar) root.findViewById(R.id.loadingIcon);
 
         SpritzTouchListener touchListener = new SpritzTouchListener(this, this.spritzHistoryView);
         this.spritzerTextView.setOnTouchListener(touchListener);
         this.playButtonView.setOnTouchListener(touchListener);
 
-        this.setupViews(this.spritzerTextView, this.spritzHistoryView);
+        FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
+        this.bus = app.getBus();
+        this.bus.register(this);
+
+        Context context = getContext();
+        Resources resources = context.getResources();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
+
+        this.spritzerApp = new Spritzer(this.bus, spritzerTextView, wpm);
+        mHandler = new SpritzFragmentHandler(this);
 
         return root;
-    }
-
-    private void setupViews(final View touchTarget, final View historyView)
-    {
-        touchTarget.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (initHeight == 0)
-                {
-                    initHeight = historyView.getHeight();
-                }
-            }
-        });
-
     }
 
     @Override
     public void onResume()
     {
         super.onResume();
-        FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
-        this.bus = app.getBus();
-        this.bus.register(this);
 
-        if (spritzerApp == null)
+        // Should this just call pause/startSprizter?
+        if (!spritzerApp.isPlaying())
         {
-            Context context = getContext();
-            Resources resources = context.getResources();
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
-
-            spritzerApp = new Spritzer(this.bus, spritzerTextView, wpm);
-            if (spritzerApp.getMedia() == null)
-            {
-                mHandler = new SpritzFragmentHandler(this);
-                mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SPRITZ_TEXT, getString(R.string.select_epub)), 1500);
-            }
-            else
-            {
-                this.updateMetaInfo();
-                this.showMetaInfo();
-            }
+            this.updateMetaInfo();
+            this.showMetaInfo();
         }
         else
         {
-            spritzerApp.setEventBus(this.bus);
-            if (!spritzerApp.isPlaying())
-            {
-                this.updateMetaInfo();
-                this.showMetaInfo();
-            }
-            else
-            {
-                this.hideActionBar();
-            }
+            this.hideActionBar();
         }
     }
 
-    public void feedMediaUriToSpritzer(Uri mediaUri)
+    public void openURI(Uri mediaUri)
     {
         if (spritzerApp == null)
         {
-            Context context = getContext();
-            Resources resources = context.getResources();
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
-
-            spritzerApp = new Spritzer(this.bus, this.spritzerTextView, wpm, mediaUri);
-            Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
+            Toast.makeText(getContext().getApplicationContext(), "Spritz app not loaded", Toast.LENGTH_LONG).show();
+//            Context context = getContext();
+//            Resources resources = context.getResources();
+//            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+//            int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
+//
+//            spritzerApp = new Spritzer(this.bus, this.spritzerTextView, wpm, mediaUri);
+//            Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
         }
         else
         {
-            spritzerApp.setMediaUri(mediaUri);
-            Log.i(TAG, "feedMediaUriToSpritzer called with existing spritzerApp");
+            spritzerApp.openMedia(mediaUri);
+            if ( spritzerApp.getMediaParseStatus() == Spritzer.MediaParseStatus.IN_PROGRESS )
+            {
+                this.initSpritzer();
+            }
+            else
+            {
+                this.pauseSpritzer();
+            }
         }
-        this.pauseSpritzer();
-//        Log.i(TAG, "configwpm: " + configWpm);
-//        int wpm = prefs.getInt("config_key_wpm",300);
-//        Log.i(TAG, " Set WPM to: " + wpm);
-//        Commenting out because synchronous call
-//        if (Spritzer.isHttpUri(mediaUri))
-//        {
-//            spritzerApp.setTextAndStart(getString(R.string.loading), false);
-//            this.statusVisual.setIndeterminate(true);
-//        }
     }
 
+    @Subscribe
+    public void ProcessBusEvent(Spritzer.BusEvent event)
+    {
+        Log.i(TAG, "ProcessBusEvent: " + event.name());
+        if ( event == Spritzer.BusEvent.CONTENT_PARSED )
+        {
+            this.loadingIcon.setVisibility(View.INVISIBLE);
+            this.pauseSpritzer();
+        }
+    }
 
     void userTap()
     {
@@ -233,9 +198,18 @@ public class SpritzFragment extends Fragment
         }
     }
 
+    private void initSpritzer()
+    {
+        this.updateMetaInfo();
+        this.showMetaInfo();
+        this.spritzerTextView.setVisibility(View.INVISIBLE);
+        this.playButtonView.setVisibility(View.INVISIBLE);
+        this.loadingIcon.setVisibility(View.VISIBLE);
+        this.showActionBar();
+    }
     private void pauseSpritzer()
     {
-        spritzerApp.pause("SpritzFragment.pauseSpritzer");
+        this.spritzerApp.pause();
         this.updateMetaInfo();
         this.showMetaInfo();
         this.spritzerTextView.setVisibility(View.INVISIBLE);
@@ -249,7 +223,7 @@ public class SpritzFragment extends Fragment
         this.spritzerTextView.setVisibility(View.VISIBLE);
         this.playButtonView.setVisibility(View.INVISIBLE);
         this.hideActionBar();
-        spritzerApp.start(true, "startSpritzer");
+        spritzerApp.start();
     }
 
     private void hideMetaInfo()

@@ -21,5 +21,13 @@
             android:summary="@string/config_wpm_slow_desc"
             android:title="@string/config_wpm_slow" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/config_cat_dev">
+
+    </PreferenceCategory>
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/config_dev_source_key"
+        android:summary="@string/config_dev_source_desc"
+        android:title="@string/config_dev_source" />
 
 </PreferenceScreen>

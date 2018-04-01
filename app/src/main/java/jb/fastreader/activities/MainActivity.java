@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.Toast;
 
 import com.squareup.otto.Bus;
 
@@ -19,6 +20,7 @@ import jb.fastreader.Preferences;
 import jb.fastreader.R;
 import jb.fastreader.fragments.ConfigurationFragment;
 import jb.fastreader.fragments.SpritzFragment;
+import jb.fastreader.spritz.Spritzer;
 
 // This is the activity that gets called when you share to this app
 public class MainActivity extends FragmentActivity implements View.OnSystemUiVisibilityChangeListener
@@ -77,39 +79,47 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
         this.dimSystemUi(true);
 
         Intent intent = getIntent();
-        String action = intent.getAction();
-
-        if ( !this.isIntentMarkedAsHandled(intent) )
+        if ( this.isIntentMarkedAsHandled(intent) )
         {
-            Log.i(TAG, "onResume: with action " + action);
-            if ( action.equals(Intent.ACTION_SEND) )  // when something is shared with this app
-            {
-                // Some apps send article title before URL so parse it out
-                String extraText = intent.getStringExtra(Intent.EXTRA_TEXT);
-                if ( !extraText.substring(0,4).equalsIgnoreCase("http") )
-                {
-                    int pos = extraText.indexOf("http");
-                    if ( pos >= 0 )
-                    {
-                        extraText = extraText.substring(pos);
-                    }
-                }
+            return;
+        }
 
-                Uri uri = Uri.parse(extraText);
-                if ( uri != null )
+        String action = intent.getAction();
+        Log.i(TAG, "onResume: with action " + action);
+
+        // Something has been shared to this app
+        if ( action.equals(Intent.ACTION_SEND) )
+        {
+            // Some apps send article title before URL so parse it out
+            String extraText = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if ( !extraText.substring(0, 4).equalsIgnoreCase("http") )
+            {
+                int pos = extraText.indexOf("http");
+                if ( pos >= 0 )
                 {
-                    Log.i(TAG, "onResume: ACTION_SENT called with uri: " + uri.toString());
-                    this.getSpritzFragment().feedMediaUriToSpritzer(uri);
-                }
-                else
-                {
-                    // display toast?
-                    Log.i(TAG, "onResume: ACTION_SENT called but extra failed URI parse");
+                    extraText = extraText.substring(pos);
                 }
             }
 
-            this.markIntentAsHandled(intent);
+            Uri uri = Uri.parse(extraText);
+            if ( uri == null )
+            {
+                Log.w(TAG, R.string.error_could_not_parse_uri + extraText);
+                Toast.makeText(getApplicationContext(), R.string.error_could_not_parse_uri + extraText, Toast.LENGTH_LONG).show();
+            }
+            else if ( !Spritzer.isUriSupported(uri) )
+            {
+                Log.w(TAG, R.string.error_unsupported_uri + extraText);
+                Toast.makeText(getApplicationContext(), R.string.error_unsupported_uri + extraText, Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                Log.i(TAG, "onResume: ACTION_SENT called with uri: " + uri.toString());
+                this.getSpritzFragment().openURI(uri);
+            }
         }
+
+        this.markIntentAsHandled(intent);
     }
 
     private void dimSystemUi(boolean doDim)
