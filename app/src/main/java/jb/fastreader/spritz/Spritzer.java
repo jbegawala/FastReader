@@ -21,7 +21,8 @@ public class Spritzer
 {
     public enum BusEvent
     {
-        CONTENT_PARSED
+        CONTENT_PARSED,
+        CONTENT_FINISHED
     }
 
     public enum MediaParseStatus
@@ -47,6 +48,7 @@ public class Spritzer
         this.spritzerTextView = (SpritzerTextView) spritzerTextView;
         this.spritzerTextView.setSyncObject(this.spritzerThreadSync);
         this.spritzerTextView.setWpm(wpm);
+        this.spritzerTextView.setBus(bus);
         this.bus = bus;
         this.mediaParseStatus = MediaParseStatus.NOT_STARTED;
     }

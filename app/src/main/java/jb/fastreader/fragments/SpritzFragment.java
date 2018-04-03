@@ -7,7 +7,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -26,8 +25,6 @@ import android.widget.TextView;
 
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-
-import java.lang.ref.WeakReference;
 
 import jb.fastreader.spritz.Spritzer;
 import jb.fastreader.FastReaderApplication;
@@ -57,7 +54,6 @@ public class SpritzFragment extends Fragment
     private TextView spritzHistoryView;
     private SpritzerTextView spritzerTextView;
     private Bus bus;
-    private SpritzFragmentHandler mHandler;
 
     public SpritzFragment() { }
 
@@ -125,7 +121,6 @@ public class SpritzFragment extends Fragment
         int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
 
         this.spritzerApp = new Spritzer(this.bus, spritzerTextView, wpm);
-        mHandler = new SpritzFragmentHandler(this);
 
         return root;
     }
@@ -178,10 +173,19 @@ public class SpritzFragment extends Fragment
     public void ProcessBusEvent(Spritzer.BusEvent event)
     {
         Log.i(TAG, "ProcessBusEvent: " + event.name());
-        if ( event == Spritzer.BusEvent.CONTENT_PARSED )
+        if (event == Spritzer.BusEvent.CONTENT_PARSED)
         {
             this.loadingIcon.setVisibility(View.INVISIBLE);
             this.pauseSpritzer();
+        }
+        else if (event == Spritzer.BusEvent.CONTENT_FINISHED)
+        {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    endOfArticle();
+                }
+            });
         }
     }
 
@@ -224,6 +228,15 @@ public class SpritzFragment extends Fragment
         this.playButtonView.setVisibility(View.INVISIBLE);
         this.hideActionBar();
         spritzerApp.start();
+    }
+
+    private void endOfArticle()
+    {
+        this.updateMetaInfo();
+        this.showMetaInfo();
+        this.spritzerTextView.setVisibility(View.INVISIBLE);
+        this.playButtonView.setVisibility(View.INVISIBLE);
+        this.showActionBar();
     }
 
     private void hideMetaInfo()
@@ -273,24 +286,20 @@ public class SpritzFragment extends Fragment
 
     public void updateMetaInfo()
     {
-        if (!spritzerApp.isMediaSelected())
+        if ( !this.spritzerApp.isMediaSelected() )
         {
             return;
         }
-        ISpritzerMedia content = spritzerApp.getMedia();
 
+        ISpritzerMedia content = this.spritzerApp.getMedia();
         this.contentTitle.setText(content.getTitle());
         this.contentSubtitle.setText(content.getSubtitle());
 
-        int progress = 0;
-        String status = "";
-        //if (!spritzerApp.isSpritzingSpecialMessage())
-        //{
-            int currentWord = spritzerApp.getCurrentWordNumber();
-            int wordCount = spritzerApp.getWordCount();
-            progress = currentWord * 100 / wordCount;
-            status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
-        //}
+        int currentWord = spritzerApp.getCurrentWordNumber();
+        int wordCount = spritzerApp.getWordCount();
+        int progress = currentWord * 100 / wordCount;
+        String status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
+
         Spannable spanRange = new SpannableString(status);
         TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
         spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -298,8 +307,6 @@ public class SpritzFragment extends Fragment
         this.statusVisual.setMax(100);
         this.statusVisual.setProgress(progress);
     }
-
-
 
     @Override
     public void onStop()
@@ -319,43 +326,5 @@ public class SpritzFragment extends Fragment
         {
             this.bus.unregister(this);
         }
-    }
-
-    /**
-     * A Handler bound to the UI thread. Used to conveniently
-     * handle actions that should occur after some delay.
-     */
-    protected class SpritzFragmentHandler extends Handler {
-
-        private WeakReference<SpritzFragment> mWeakSpritzFragment;
-
-        public SpritzFragmentHandler(SpritzFragment fragment) {
-            mWeakSpritzFragment = new WeakReference<SpritzFragment>(fragment);
-        }
-
-//        @Override
-//        public void handleMessage(Message msg) {
-//            int what = msg.what;
-//            Object obj = msg.obj;
-//
-//            SpritzFragment spritzer = mWeakSpritzFragment.get();
-//            if (spritzer == null) {
-//                return;
-//            }
-//            switch (what) {
-//                case MSG_HIDE_CHAPTER_LABEL:
-//                    if (getActivity() != null) {
-//                        if (spritzerApp != null && spritzerApp.isPlaying()) {
-//                            spritzer.statusText.setVisibility(View.INVISIBLE);
-//                        }
-//                    }
-//                    break;
-//                case MSG_SPRITZ_TEXT:
-//                    if (spritzerApp != null) {
-//                        spritzerApp.setTextAndStart((String) obj, false);
-//                    }
-//                    break;
-//            }
-//        }
     }
 }

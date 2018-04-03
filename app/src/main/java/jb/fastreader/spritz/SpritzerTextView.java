@@ -13,7 +13,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 
-import java.util.ArrayList;
+import com.squareup.otto.Bus;
 
 import jb.fastreader.R;
 
@@ -34,12 +34,12 @@ public class SpritzerTextView extends AppCompatTextView
     private Path bottomPivotPath;
 
     private ISpritzerMedia content = null;
-    private int contentIndex;
     private boolean isPlaying;
     private boolean isPlayingRequest;
     private boolean threadStarted;
     private Object spritzerThreadSync;
     private int wpm;
+    private Bus bus;
 
     public SpritzerTextView(Context context)
     {
@@ -62,7 +62,6 @@ public class SpritzerTextView extends AppCompatTextView
     void setContent(ISpritzerMedia content)
     {
         this.content = content;
-        this.contentIndex = 0;
     }
 
     private void init(AttributeSet attrs) {
@@ -107,6 +106,12 @@ public class SpritzerTextView extends AppCompatTextView
     {
         this.wpm = wpm;
     }
+
+    void setBus(Bus bus)
+    {
+        this.bus = bus;
+    }
+
     @Override
     protected void onDraw(Canvas canvas)
     {
@@ -246,6 +251,11 @@ public class SpritzerTextView extends AppCompatTextView
             this.spritzerThreadSync.notify();
         }
         this.threadStarted = false;
+
+        if ( this.content != null & !this.content.hasNext() )
+        {
+            this.bus.post(Spritzer.BusEvent.CONTENT_FINISHED);
+        }
     }
 
     public void pause()

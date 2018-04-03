@@ -44,7 +44,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         ArrayList<SpritzerWord> wordList = new ArrayList<>();
 
         // Merge adjacent spaces and split on spaces
-        String[] wordArray = input.replaceAll("/\\s+/g", " ").split("[ \\r\\n]");
+        String[] wordArray = input.replaceAll("/\\s+/g", " ").replaceAll("[ \\r\\n]+","\n").split("[ \\n]");
         this.wordIndex = 0;
         this.wordCount = wordArray.length;
 
