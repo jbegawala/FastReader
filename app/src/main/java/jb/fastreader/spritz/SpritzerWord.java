@@ -1,5 +1,6 @@
 package jb.fastreader.spritz;
 
+import android.os.Build;
 import android.util.Log;
 
 /**
@@ -14,12 +15,14 @@ class SpritzerWord
     private int pivotPosition;
     private int delayFactor;
     private boolean isNewWord;
+    private boolean isNewSentence;
+    private boolean isNewParagraph;
 
     /**
      * Creates an object that holds a short string that is flashed to the user
      * @param word String to flash
      */
-    SpritzerWord(String word, boolean isNewWord)
+    SpritzerWord(String word, boolean isNewWord, boolean isNewSentence, boolean isNewParagraph)
     {
         if ( word.isEmpty() )
         {
@@ -30,6 +33,8 @@ class SpritzerWord
         this.word = this.padWordAndFindPivot(word);
         this.delayFactor = delayMultiplierForWord(word);
         this.isNewWord = isNewWord;
+        this.isNewSentence = isNewSentence;
+        this.isNewParagraph = isNewParagraph;
     }
 
     /**
@@ -111,5 +116,15 @@ class SpritzerWord
     boolean isNewWord()
     {
         return this.isNewWord;
+    }
+
+    boolean isNewSentence()
+    {
+        return this.isNewSentence;
+    }
+
+    boolean isNewParagraph()
+    {
+        return this.isNewParagraph;
     }
 }

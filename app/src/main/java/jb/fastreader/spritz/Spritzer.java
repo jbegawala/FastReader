@@ -210,7 +210,7 @@ public class Spritzer
 
     public int getCurrentWordNumber()
     {
-        return this.media.getWordIndex();
+        return this.media.getWordIndex();  // word index is a zero based index whose current value is the next word to display
     }
 
     public int getWordCount()
@@ -222,7 +222,20 @@ public class Spritzer
         return media != null;
     }
 
+    public void rewindCurrentSentence()
+    {
+        this.media.rewindCurrentSentence();
+    }
 
+    public void rewindPreviousSentence()
+    {
+        this.media.rewindPreviousSentence();
+    }
+
+    public void rewindCurrentParagraph()
+    {
+        this.media.rewindCurrentParagraph();
+    }
 
 //    /**
 //     * Load the given chapter as sanitized text, proceeding

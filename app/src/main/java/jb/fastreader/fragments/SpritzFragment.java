@@ -49,6 +49,9 @@ public class SpritzFragment extends Fragment
     private ProgressBar statusVisual;
     private Switch speedQuickToggle;
     private ImageView playButtonView;
+    private ImageView rewindCurSentence;
+    private ImageView rewindPrevSentence;
+    private ImageView rewindCurParagraph;
     private ProgressBar loadingIcon;
 
     private TextView spritzHistoryView;
@@ -104,12 +107,42 @@ public class SpritzFragment extends Fragment
             }
         });
 
-        this.playButtonView = (ImageView) root.findViewById(R.id.playButtonView);
-        this.loadingIcon = (ProgressBar) root.findViewById(R.id.loadingIcon);
-
         SpritzTouchListener touchListener = new SpritzTouchListener(this, this.spritzHistoryView);
         this.spritzerTextView.setOnTouchListener(touchListener);
+
+        this.playButtonView = (ImageView) root.findViewById(R.id.playButtonView);
         this.playButtonView.setOnTouchListener(touchListener);
+
+        this.rewindCurSentence = (ImageView) root.findViewById(R.id.rewindCurrentSentence);
+        this.rewindCurSentence.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                spritzerApp.rewindCurrentSentence();
+                startSpritzer();
+            }
+        });
+        this.rewindPrevSentence = (ImageView) root.findViewById(R.id.rewindPreviousSentence);
+        this.rewindPrevSentence.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                spritzerApp.rewindPreviousSentence();
+                startSpritzer();
+            }
+        });
+        this.rewindCurParagraph = (ImageView) root.findViewById(R.id.rewindCurrentParagraph);
+        this.rewindCurParagraph.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                spritzerApp.rewindCurrentParagraph();
+                startSpritzer();
+            }
+        });
+
+
+        this.loadingIcon = (ProgressBar) root.findViewById(R.id.loadingIcon);
 
         FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
         this.bus = app.getBus();
@@ -207,8 +240,8 @@ public class SpritzFragment extends Fragment
         this.updateMetaInfo();
         this.showMetaInfo();
         this.spritzerTextView.setVisibility(View.INVISIBLE);
-        this.playButtonView.setVisibility(View.INVISIBLE);
         this.loadingIcon.setVisibility(View.VISIBLE);
+        this.hideNavButtons();
         this.showActionBar();
     }
     private void pauseSpritzer()
@@ -217,7 +250,7 @@ public class SpritzFragment extends Fragment
         this.updateMetaInfo();
         this.showMetaInfo();
         this.spritzerTextView.setVisibility(View.INVISIBLE);
-        this.playButtonView.setVisibility(View.VISIBLE);
+        this.showNavButtons();
         this.showActionBar();
     }
 
@@ -225,9 +258,25 @@ public class SpritzFragment extends Fragment
     {
         this.hideMetaInfo();
         this.spritzerTextView.setVisibility(View.VISIBLE);
-        this.playButtonView.setVisibility(View.INVISIBLE);
+        this.hideNavButtons();
         this.hideActionBar();
         spritzerApp.start();
+    }
+
+    private void hideNavButtons()
+    {
+        this.playButtonView.setVisibility(View.INVISIBLE);
+        this.rewindCurSentence.setVisibility(View.INVISIBLE);
+        this.rewindPrevSentence.setVisibility(View.INVISIBLE);
+        this.rewindCurParagraph.setVisibility(View.INVISIBLE);
+    }
+
+    private void showNavButtons()
+    {
+        this.playButtonView.setVisibility(View.VISIBLE);
+        this.rewindCurSentence.setVisibility(View.VISIBLE);
+        this.rewindPrevSentence.setVisibility(View.VISIBLE);
+        this.rewindCurParagraph.setVisibility(View.VISIBLE);
     }
 
     private void endOfArticle()
@@ -297,15 +346,22 @@ public class SpritzFragment extends Fragment
 
         int currentWord = spritzerApp.getCurrentWordNumber();
         int wordCount = spritzerApp.getWordCount();
-        int progress = currentWord * 100 / wordCount;
-        String status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
+        if ( wordCount == 0 )
+        {
+            this.statusVisual.setIndeterminate(true);
+        }
+        else
+        {
+            int progress = currentWord * 100 / wordCount;
+            String status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
 
-        Spannable spanRange = new SpannableString(status);
-        TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
-        spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        this.statusText.setText(spanRange);
-        this.statusVisual.setMax(100);
-        this.statusVisual.setProgress(progress);
+            Spannable spanRange = new SpannableString(status);
+            TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
+            spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            this.statusText.setText(spanRange);
+            this.statusVisual.setMax(100);
+            this.statusVisual.setProgress(progress);
+        }
     }
 
     @Override

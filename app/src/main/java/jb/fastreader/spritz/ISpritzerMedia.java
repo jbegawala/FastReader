@@ -13,6 +13,12 @@ public interface ISpritzerMedia extends Serializable
 
     int getWordIndex();
 
+    void rewindCurrentSentence();
+
+    void rewindPreviousSentence();
+
+    void rewindCurrentParagraph();
+
     boolean hasNext();
 
     SpritzerWord next();
