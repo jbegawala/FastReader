@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.squareup.otto.Bus;
 
 import jb.fastreader.FastReaderApplication;
-import jb.fastreader.Preferences;
 import jb.fastreader.R;
 import jb.fastreader.fragments.ConfigurationFragment;
 import jb.fastreader.fragments.SpritzFragment;
@@ -27,7 +26,6 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
 {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String JB_READER_FRAGMENT = "jbreaderfragment";
-    private static final int THEME_LIGHT = 0;
     private Bus bus;
 
     @Override
@@ -51,16 +49,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
 
     private void applyThemeFromConfiguration()
     {
-        if ( Preferences.getTheme(this) == THEME_LIGHT )
-        {
-            setTheme(R.style.Light);
-            Log.i(TAG, "Applied light theme");
-        }
-        else
-        {
-            setTheme(R.style.Dark);
-            Log.i(TAG, "Applied dark theme");
-        }
+        setTheme(R.style.Dark);
     }
 
     private void setupActionBar()

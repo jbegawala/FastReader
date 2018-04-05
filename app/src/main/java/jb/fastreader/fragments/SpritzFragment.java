@@ -2,12 +2,9 @@ package jb.fastreader.fragments;
 
 import android.app.ActionBar;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.Spannable;
@@ -26,6 +23,7 @@ import android.widget.TextView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
+import jb.fastreader.Preferences;
 import jb.fastreader.spritz.Spritzer;
 import jb.fastreader.FastReaderApplication;
 import jb.fastreader.R;
@@ -89,21 +87,8 @@ public class SpritzFragment extends Fragment
             public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked )
             {
                 Context context = getActivity().getBaseContext();
-                Resources resources = context.getResources();
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-                String wpmKey;
-                String wpmDefault;
-                if ( isChecked )
-                {
-                    wpmKey = resources.getString(R.string.config_wpm_fast_key);
-                    wpmDefault = resources.getString(R.string.config_wpm_fast_default);
-                }
-                else
-                {
-                    wpmKey = resources.getString(R.string.config_wpm_slow_key);
-                    wpmDefault = resources.getString(R.string.config_wpm_slow_default);
-                }
-                spritzerApp.setWpm(Integer.parseInt(sharedPreferences.getString(wpmKey, wpmDefault)));
+                int wpm = isChecked ? Preferences.getFastWpm(context) : Preferences.getSlowWpm(context);
+                spritzerApp.setWpm(wpm);
             }
         });
 
@@ -148,11 +133,7 @@ public class SpritzFragment extends Fragment
         this.bus = app.getBus();
         this.bus.register(this);
 
-        Context context = getContext();
-        Resources resources = context.getResources();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
-
+        int wpm = Preferences.getFastWpm(getContext());
         this.spritzerApp = new Spritzer(this.bus, spritzerTextView, wpm);
 
         return root;
@@ -180,13 +161,6 @@ public class SpritzFragment extends Fragment
         if (spritzerApp == null)
         {
             Toast.makeText(getContext().getApplicationContext(), "Spritz app not loaded", Toast.LENGTH_LONG).show();
-//            Context context = getContext();
-//            Resources resources = context.getResources();
-//            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-//            int wpm = Integer.parseInt(sharedPreferences.getString(resources.getString(R.string.config_wpm_fast_key), resources.getString(R.string.config_wpm_fast_default)));
-//
-//            spritzerApp = new Spritzer(this.bus, this.spritzerTextView, wpm, mediaUri);
-//            Log.i(TAG, "feedMediaUriToSpritzer called without spritzerApp");
         }
         else
         {
@@ -244,6 +218,7 @@ public class SpritzFragment extends Fragment
         this.hideNavButtons();
         this.showActionBar();
     }
+
     private void pauseSpritzer()
     {
         this.spritzerApp.pause();
@@ -296,6 +271,7 @@ public class SpritzFragment extends Fragment
         this.statusVisual.setVisibility(View.INVISIBLE);
         this.speedQuickToggle.setVisibility(View.INVISIBLE);
     }
+
     private void showMetaInfo()
     {
         this.contentTitle.setVisibility(View.VISIBLE);

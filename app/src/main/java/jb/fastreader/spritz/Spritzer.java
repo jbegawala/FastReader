@@ -181,15 +181,9 @@ public class Spritzer
         });
     }
 
-    // TODO: Save State with SpritzerMedia
     public void saveState()
     {
-//        // no point in saving article state, is there?
-//        if (this.media != null)
-//        {
-//            Log.i(TAG, "Saving state at chapter " + chapter + " word: " + mCurWordIdx);
-//            Preferences.saveState(this.spritzerTextView.getContext(), chapter, mediaUri.toString(), mCurWordIdx, media.getTitle(), this.spritzerTextView.getWpm());
-//        }
+        // TODO: Save State with SpritzerMedia
     }
 
 
@@ -341,40 +335,4 @@ public class Spritzer
 //        return null;
 //    }
 
-
-//    /**
-//     * Rewind the spritzer by the specified
-//     * amount of words
-//     */
-//    public void rewind(int numWords) {
-//        Log.i(TAG, "rewind: I thought this wasn't used");
-//        // TODO implement. words, last sentence, last paragraph
-//        if (mCurWordIdx > numWords) {
-//            mCurWordIdx -= numWords;
-//        } else {
-//            mCurWordIdx = 0;
-//        }
-//    }
-//
-//    /**
-//     * Get the estimated time remaining in the
-//     * currently loaded String Queue
-//     */
-//    public int getMinutesRemainingInQueue() {
-//        if (wordList.size() == 0) {
-//            return 0;
-//        }
-//        return (wordList.size() - (mCurWordIdx + 1)) / wpm;
-//    }
-//
-//    /**
-//     * Return the completeness of the current
-//     * Spritz segment as a float between 0 and 1.
-//     *
-//     * @return a float between 0 (not started) and 1 (complete)
-//     */
-//    public float getQueueCompleteness()
-//    {
-//        return (this.wordArray == null) ? 0 : ((float) mCurWordIdx) / wordList.size();
-//    }
 }

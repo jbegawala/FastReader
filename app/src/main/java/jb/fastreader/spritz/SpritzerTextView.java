@@ -263,11 +263,6 @@ public class SpritzerTextView extends AppCompatTextView
         this.isPlayingRequest = false;
     }
 
-    public void restart()
-    {
-        // have a restore and a restart?
-    }
-
     public boolean isPlaying()
     {
         return this.isPlaying;
@@ -277,11 +272,6 @@ public class SpritzerTextView extends AppCompatTextView
     {
         return this.isPlayingRequest;
     }
-
-
-//    protected boolean isWordListComplete() {
-//        return mCurWordIdx >= wordList.size() - 1;
-//    }
 
     private int getInterWordDelay()
     {
@@ -309,6 +299,5 @@ public class SpritzerTextView extends AppCompatTextView
         this.setText(spanRange);
 
         Thread.sleep(this.getInterWordDelay() * spritzerWord.getDelayFactor());
-
     }
 }
