@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import android.app.Activity;
+import android.app.Fragment;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -32,13 +32,14 @@ import jb.fastreader.spritz.SpritzerTextView;
 
 import android.widget.Toast;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 
-// Main fragment
 public class SpritzFragment extends Fragment
 {
     private static final String TAG = SpritzFragment.class.getSimpleName();
 
-    private Spritzer spritzerApp;
+    private Spritzer spritzer;
 
     // Meta UI components
     private TextView contentTitle;
@@ -63,8 +64,7 @@ public class SpritzFragment extends Fragment
     {
         Log.i(TAG, "onCreateView: start");
         // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.fragment_spritz, container, false);
-
+        final View root = inflater.inflate(R.layout.fragment_spritz, container, false);
         this.contentTitle = ((TextView) root.findViewById(R.id.contentTitle));
         this.contentSubtitle = ((TextView) root.findViewById(R.id.contentSubtitle));
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
@@ -84,11 +84,11 @@ public class SpritzFragment extends Fragment
         this.speedQuickToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
             @Override
-            public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked )
+            public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked)
             {
                 Context context = getActivity().getBaseContext();
                 int wpm = isChecked ? Preferences.getFastWpm(context) : Preferences.getSlowWpm(context);
-                spritzerApp.setWpm(wpm);
+                SpritzFragment.this.spritzer.setWpm(wpm);
             }
         });
 
@@ -99,30 +99,33 @@ public class SpritzFragment extends Fragment
         this.playButtonView.setOnTouchListener(touchListener);
 
         this.rewindCurSentence = (ImageView) root.findViewById(R.id.rewindCurrentSentence);
-        this.rewindCurSentence.setOnClickListener(new View.OnClickListener(){
+        this.rewindCurSentence.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v)
             {
-                spritzerApp.rewindCurrentSentence();
-                startSpritzer();
+                SpritzFragment.this.spritzer.rewindCurrentSentence();
+                SpritzFragment.this.startSpritzer();
             }
         });
         this.rewindPrevSentence = (ImageView) root.findViewById(R.id.rewindPreviousSentence);
-        this.rewindPrevSentence.setOnClickListener(new View.OnClickListener(){
+        this.rewindPrevSentence.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v)
             {
-                spritzerApp.rewindPreviousSentence();
-                startSpritzer();
+                SpritzFragment.this.spritzer.rewindPreviousSentence();
+                SpritzFragment.this.startSpritzer();
             }
         });
         this.rewindCurParagraph = (ImageView) root.findViewById(R.id.rewindCurrentParagraph);
-        this.rewindCurParagraph.setOnClickListener(new View.OnClickListener(){
+        this.rewindCurParagraph.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v)
             {
-                spritzerApp.rewindCurrentParagraph();
-                startSpritzer();
+                SpritzFragment.this.spritzer.rewindCurrentParagraph();
+                SpritzFragment.this.startSpritzer();
             }
         });
 
@@ -132,9 +135,16 @@ public class SpritzFragment extends Fragment
         FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
         this.bus = app.getBus();
         this.bus.register(this);
-
-        int wpm = Preferences.getFastWpm(getContext());
-        this.spritzerApp = new Spritzer(this.bus, spritzerTextView, wpm);
+        this.spritzer = new Spritzer(getContext(), this.bus, spritzerTextView);
+        Bundle bundle = getArguments();
+        if ( bundle != null )
+        {
+            ISpritzerMedia media = (ISpritzerMedia) getArguments().getSerializable("media");
+            if ( media != null )
+            {
+                this.spritzer.setMedia(media);
+            }
+        }
 
         return root;
     }
@@ -145,7 +155,7 @@ public class SpritzFragment extends Fragment
         super.onResume();
 
         // Should this just call pause/startSprizter?
-        if (!spritzerApp.isPlaying())
+        if (!this.spritzer.isPlaying())
         {
             this.updateMetaInfo();
             this.showMetaInfo();
@@ -158,14 +168,14 @@ public class SpritzFragment extends Fragment
 
     public void openURI(Uri mediaUri)
     {
-        if (spritzerApp == null)
+        if (this.spritzer == null)
         {
             Toast.makeText(getContext().getApplicationContext(), "Spritz app not loaded", Toast.LENGTH_LONG).show();
         }
         else
         {
-            spritzerApp.openMedia(mediaUri);
-            if ( spritzerApp.getMediaParseStatus() == Spritzer.MediaParseStatus.IN_PROGRESS )
+            this.spritzer.openMedia(mediaUri);
+            if ( this.spritzer.getMediaParseStatus() == Spritzer.MediaParseStatus.IN_PROGRESS )
             {
                 this.initSpritzer();
             }
@@ -190,7 +200,7 @@ public class SpritzFragment extends Fragment
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    endOfArticle();
+                    SpritzFragment.this.endOfArticle();
                 }
             });
         }
@@ -198,8 +208,7 @@ public class SpritzFragment extends Fragment
 
     void userTap()
     {
-
-        if (spritzerApp.isPlaying())
+        if (this.spritzer.isPlaying())
         {
             this.pauseSpritzer();
         }
@@ -221,7 +230,7 @@ public class SpritzFragment extends Fragment
 
     private void pauseSpritzer()
     {
-        this.spritzerApp.pause();
+        this.spritzer.pause();
         this.updateMetaInfo();
         this.showMetaInfo();
         this.spritzerTextView.setVisibility(View.INVISIBLE);
@@ -235,7 +244,7 @@ public class SpritzFragment extends Fragment
         this.spritzerTextView.setVisibility(View.VISIBLE);
         this.hideNavButtons();
         this.hideActionBar();
-        spritzerApp.start();
+        this.spritzer.start();
     }
 
     private void hideNavButtons()
@@ -286,10 +295,10 @@ public class SpritzFragment extends Fragment
 
     private void hideActionBar()
     {
-        FragmentActivity activity = getActivity();
+        Activity activity = getActivity();
         if ( activity != null )
         {
-            ActionBar bar = activity.getActionBar();
+            ActionBar bar = getActivity().getActionBar();
             if ( bar != null)
             {
                 bar.hide();
@@ -298,7 +307,7 @@ public class SpritzFragment extends Fragment
     }
     private void showActionBar()
     {
-        FragmentActivity activity = getActivity();
+        Activity activity = getActivity();
         if ( activity != null )
         {
             ActionBar bar = activity.getActionBar();
@@ -311,17 +320,27 @@ public class SpritzFragment extends Fragment
 
     public void updateMetaInfo()
     {
-        if ( !this.spritzerApp.isMediaSelected() )
+        if ( !this.spritzer.isMediaSelected() )
         {
             return;
         }
 
-        ISpritzerMedia content = this.spritzerApp.getMedia();
+        ISpritzerMedia content = this.spritzer.getMedia();
         this.contentTitle.setText(content.getTitle());
-        this.contentSubtitle.setText(content.getSubtitle());
 
-        int currentWord = spritzerApp.getCurrentWordNumber();
-        int wordCount = spritzerApp.getWordCount();
+        String subtitle;
+        try
+        {
+            subtitle =  new URL(content.getUri()).getHost();
+        }
+        catch (MalformedURLException e)
+        {
+            subtitle = "";
+        }
+        this.contentSubtitle.setText(subtitle);
+
+        int currentWord = this.spritzer.getCurrentWordNumber();
+        int wordCount = this.spritzer.getWordCount();
         if ( wordCount == 0 )
         {
             this.statusVisual.setIndeterminate(true);
@@ -344,9 +363,9 @@ public class SpritzFragment extends Fragment
     public void onStop()
     {
         super.onStop();
-        if (spritzerApp != null)
+        if (this.spritzer != null)
         {
-            spritzerApp.saveState();
+            this.spritzer.saveState();
         }
     }
 

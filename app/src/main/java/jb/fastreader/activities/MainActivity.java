@@ -38,7 +38,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
         this.setupActionBar();
         setContentView(R.layout.activity_main);
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, new SpritzFragment(), JB_READER_FRAGMENT).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container, new SpritzFragment(), JB_READER_FRAGMENT).commit();
 
         FastReaderApplication frApp = (FastReaderApplication) getApplication();
         this.bus = frApp.getBus();
@@ -93,12 +93,12 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
             Uri uri = Uri.parse(extraText);
             if ( uri == null )
             {
-                Log.w(TAG, R.string.error_could_not_parse_uri + extraText);
+                Log.w(TAG, getResources().getString(R.string.error_could_not_parse_uri) + extraText);
                 Toast.makeText(getApplicationContext(), R.string.error_could_not_parse_uri + extraText, Toast.LENGTH_LONG).show();
             }
             else if ( !Spritzer.isUriSupported(uri) )
             {
-                Log.w(TAG, R.string.error_unsupported_uri + extraText);
+                Log.w(TAG, getResources().getString(R.string.error_unsupported_uri) + extraText);
                 Toast.makeText(getApplicationContext(), R.string.error_unsupported_uri + extraText, Toast.LENGTH_LONG).show();
             }
             else
@@ -173,7 +173,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
 
     private SpritzFragment getSpritzFragment()
     {
-        return ((SpritzFragment) getSupportFragmentManager().findFragmentByTag(JB_READER_FRAGMENT));
+        return ((SpritzFragment) getFragmentManager().findFragmentByTag(JB_READER_FRAGMENT));
     }
 
     @Override

@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import jb.fastreader.R;
@@ -19,7 +21,6 @@ import jb.fastreader.R;
 /**
  * Created by Junaid Begawala on 4/5/18.
  */
-
 class LibraryAdapter extends ArrayAdapter<LibraryItem>
 {
     private Context context;
@@ -54,7 +55,17 @@ class LibraryAdapter extends ArrayAdapter<LibraryItem>
             TextView subtitle = (TextView) convertView.findViewById(R.id.itemSubTitle);
             if ( subtitle != null )
             {
-                subtitle.setText(item.media.getSubtitle());
+                String host;
+
+                try
+                {
+                    host =  new URL(item.media.getUri()).getHost();
+                }
+                catch (MalformedURLException e)
+                {
+                    host = "";
+                }
+                subtitle.setText(host);
             }
             ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
             if ( progressBar != null )

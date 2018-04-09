@@ -1,12 +1,9 @@
 package jb.fastreader.formats;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import jb.fastreader.spritz.SpritzerMedia;
 
 /**
- * Created by jb on 2/25/18.
+ * Created by Junaid Begawala on 2/25/18.
  */
 
 public class DummyHtmlPage extends SpritzerMedia
@@ -24,17 +21,5 @@ public class DummyHtmlPage extends SpritzerMedia
                 "You also have to dine-in in order to take advantage of the deal.\n" +
                 "\n" +
                 "That said, free pancakes. Or, you could just whip some up at home. Here’s how to make some fluffy ones. ");
-    }
-
-    @Override
-    public String getSubtitle()
-    {
-        try
-        {
-            return new URL(super.getSubtitle()).getHost();
-        }
-        catch (MalformedURLException e) {}  // Can't really do anything
-
-        return "";
     }
 }

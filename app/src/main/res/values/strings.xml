@@ -43,5 +43,6 @@
     <string name="config_dev_source_key">config_dev_source</string>
     <string name="error_could_not_parse_uri">Could not parse URI: </string>
     <string name="error_unsupported_uri">Unsupported URI: </string>
+    <string name="error_could_not_load_media">Could not load media</string>
     <string name="playButton_contentDescription">Press to begin playback</string>
 </resources>

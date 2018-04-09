@@ -1,13 +1,14 @@
 package jb.fastreader.spritz;
 
-import android.os.Build;
 import android.util.Log;
+
+import java.io.Serializable;
 
 /**
  * Created by Junaid Begawala on 3/21/18.
  */
 
-class SpritzerWord
+class SpritzerWord implements Serializable
 {
     private static final String TAG = SpritzerWord.class.getSimpleName();
 

@@ -17,7 +17,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     private static int SENTENCE = 1;
     private static int PARAGRAPH = 2;
     private String title;
-    private String subtitle;
+    private String uri;
     private ArrayList<SpritzerWord> content;
     private int contentLength;
     private int wordCount;
@@ -34,13 +34,13 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     /**
      * Creates media object
      * @param title Title of content
-     * @param subtitle Subtitle of content, typically author or url
+     * @param uri Uri of content
      * @param text A string without any markup or formatting
      */
-    public SpritzerMedia(String title, String subtitle, String text)
+    public SpritzerMedia(String title, String uri, String text)
     {
         this.title = title;
-        this.subtitle = subtitle;
+        this.uri = uri;
         this.processText(text);
         this.indexContent();
     }
@@ -60,7 +60,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         boolean isNewSentence;
         ArrayList<SpritzerWord> wordList = new ArrayList<>();
 
-        paragraphs = input.replaceAll("/\\s+/g", " ").replaceAll(" ?[\\r\\n]+", "\n").split("\\n");
+        paragraphs = input.trim().replaceAll("/\\s+/g", " ").replaceAll(" ?[\\r\\n]+", "\n").split("\\n");
         for (int p = 0; p < paragraphs.length; p++)
         {
             sentences = paragraphs[p].split("\\.");
@@ -304,10 +304,9 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         return this.title;
     }
 
-    @Override
-    public String getSubtitle()
+    public String getUri()
     {
-        return this.subtitle;
+        return this.uri;
     }
 
     @Override

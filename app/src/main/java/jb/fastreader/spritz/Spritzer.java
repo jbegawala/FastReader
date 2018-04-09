@@ -1,5 +1,6 @@
 package jb.fastreader.spritz;
 
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.TextView;
@@ -12,10 +13,16 @@ import com.squareup.otto.Bus;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.UUID;
+
 import cz.msebera.android.httpclient.Header;
 import jb.fastreader.Preferences;
 import jb.fastreader.R;
 import jb.fastreader.formats.*;
+import jb.fastreader.library.Library;
 
 public class Spritzer
 {
@@ -32,22 +39,24 @@ public class Spritzer
         COMPLETE
     }
 
-    private static final String TAG = Spritzer.class.getSimpleName();
+    final private static  String TAG = Spritzer.class.getSimpleName();
 
-    private final Object spritzerThreadSync = new Object();
-    private final Object mediaStatusSync = new Object();
+    final private Object spritzerThreadSync = new Object();
+    final private Object mediaStatusSync = new Object();
 
+    private Context context;
     private Bus bus;
     private ISpritzerMedia media;
     private MediaParseStatus mediaParseStatus;
     private SpritzerTextView spritzerTextView;
 
-    public Spritzer(Bus bus, TextView spritzerTextView, int wpm)
+    public Spritzer(Context context, Bus bus, TextView spritzerTextView)
     {
         Log.v(TAG, "Constructor");
+        this.context = context;
         this.spritzerTextView = (SpritzerTextView) spritzerTextView;
         this.spritzerTextView.setSyncObject(this.spritzerThreadSync);
-        this.spritzerTextView.setWpm(wpm);
+        this.spritzerTextView.setWpm(Preferences.getFastWpm(this.context));
         this.spritzerTextView.setBus(bus);
         this.bus = bus;
         this.mediaParseStatus = MediaParseStatus.NOT_STARTED;
@@ -65,13 +74,13 @@ public class Spritzer
             }
             if ( Preferences.useDummyArticle(this.spritzerTextView.getContext()) )
             {
-                this.media = new DummyHtmlPage();
+                this.setMedia(new DummyHtmlPage());
                 synchronized ( this.mediaStatusSync )
                 {
                     this.mediaParseStatus = MediaParseStatus.COMPLETE;
                 }
-                this.spritzerTextView.setContent(this.media);
                 this.bus.post(BusEvent.CONTENT_PARSED);
+                this.saveParsedContent();
             }
             else
             {
@@ -82,6 +91,12 @@ public class Spritzer
         {
             this.reportFileUnsupported();
         }
+    }
+
+    public void setMedia(ISpritzerMedia media)
+    {
+        this.media = media;
+        this.spritzerTextView.setContent(media);
     }
 
     public void start()
@@ -162,8 +177,7 @@ public class Spritzer
                     }
                 }
 
-                media = new HtmlPage(title, subtitle, content);
-                spritzerTextView.setContent(media);
+                Spritzer.this.setMedia(new HtmlPage(title, subtitle, content));
 
                 synchronized (mediaStatusSync)
                 {
@@ -171,6 +185,7 @@ public class Spritzer
                 }
 
                 bus.post(BusEvent.CONTENT_PARSED);
+                saveParsedContent();
             }
 
             @Override
@@ -184,6 +199,24 @@ public class Spritzer
     public void saveState()
     {
         // TODO: Save State with SpritzerMedia
+    }
+
+    private void saveParsedContent()
+    {
+        try
+        {
+            String fileName = UUID.nameUUIDFromBytes(this.media.getUri().getBytes()).toString();
+            File file = new File(this.context.getDir(Library.ARTICLE_DIRECTORY, Context.MODE_PRIVATE), fileName);
+            FileOutputStream fos = new FileOutputStream(file, false);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(this.media);
+            oos.close();
+            fos.close();
+        }
+        catch (java.io.IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
 

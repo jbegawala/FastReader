@@ -1,32 +1,30 @@
 package jb.fastreader.library;
 
-import java.util.Random;
+import android.support.annotation.NonNull;
 
-import jb.fastreader.formats.DummyHtmlPage;
 import jb.fastreader.spritz.ISpritzerMedia;
 
 /**
  * Created by Junaid Begawala on 4/5/18.
  */
 
-public class LibraryItem
+class LibraryItem implements Comparable<LibraryItem>
 {
     ISpritzerMedia media;
 
-    public LibraryItem()
+    LibraryItem(@NonNull ISpritzerMedia media)
     {
-        this.media = new DummyHtmlPage();
+        this.media = media;
     }
 
-    public int getProgress()
+    int getProgress()
     {
-        return new Random().nextInt(100);
-        //return this.media.getWordIndex() * 100 / this.media.getWordCount();
+        return this.media.getWordIndex() * 100 / this.media.getWordCount();
     }
 
-    public int getWpm()
+    @Override
+    public int compareTo(@NonNull LibraryItem another)
     {
-        return 500;
+        return media.getTitle().compareToIgnoreCase(another.media.getTitle());
     }
-
 }
