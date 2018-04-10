@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
 
     <application
-        android:name="jb.fastreader.FastReaderApplication"
+        android:name="jb.fastreader.FastReader"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="jb.fastreader.activities.MainActivity" >
+        <activity android:name="jb.fastreader.spritz.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

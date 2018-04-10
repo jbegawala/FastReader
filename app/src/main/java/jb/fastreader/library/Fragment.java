@@ -18,23 +18,23 @@ import java.util.LinkedList;
 import java.util.List;
 
 import jb.fastreader.R;
-import jb.fastreader.fragments.SpritzFragment;
+import jb.fastreader.spritz.SpritzFragment;
 import jb.fastreader.spritz.ISpritzerMedia;
 
-import static jb.fastreader.activities.MainActivity.JB_READER_FRAGMENT;
+import static jb.fastreader.spritz.MainActivity.JB_READER_FRAGMENT;
 
 /**
  * Created by Junaid Begawala on 4/8/18.
  */
-public class LibraryFragment extends ListFragment
+public class Fragment extends ListFragment
 {
-    ArrayAdapter<LibraryItem> adapter;
-    List<LibraryItem> items;
+    ArrayAdapter<Item> adapter;
+    List<Item> items;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.library_activity, container, false);
+        return inflater.inflate(R.layout.library_fragment, container, false);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class LibraryFragment extends ListFragment
 
     private void scanAndLoadMedia()
     {
-        List<LibraryItem> libraryContents = new LinkedList<>();
+        List<Item> libraryContents = new LinkedList<>();
 
         File[] articles = getContext().getDir(Library.ARTICLE_DIRECTORY, Context.MODE_PRIVATE).listFiles();
         for ( File article : articles )
@@ -80,7 +80,7 @@ public class LibraryFragment extends ListFragment
 
                 if ( media != null )
                 {
-                    libraryContents.add(new LibraryItem(media));
+                    libraryContents.add(new Item(media));
                 }
             }
             catch (IOException |ClassNotFoundException e) {}
@@ -88,7 +88,7 @@ public class LibraryFragment extends ListFragment
 
         Collections.sort(libraryContents);
 
-        this.adapter = new LibraryAdapter(getContext(), R.layout.library_item, libraryContents);
+        this.adapter = new Adapter(getContext(), R.layout.library_item, libraryContents);
         super.setListAdapter(this.adapter);
         this.items = libraryContents;
     }

@@ -1,4 +1,4 @@
-package jb.fastreader.fragments;
+package jb.fastreader.spritz;
 
 import android.app.ActionBar;
 import android.content.Context;
@@ -24,11 +24,8 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import jb.fastreader.Preferences;
-import jb.fastreader.spritz.Spritzer;
-import jb.fastreader.FastReaderApplication;
+import jb.fastreader.FastReader;
 import jb.fastreader.R;
-import jb.fastreader.spritz.ISpritzerMedia;
-import jb.fastreader.spritz.SpritzerTextView;
 
 import android.widget.Toast;
 
@@ -132,7 +129,7 @@ public class SpritzFragment extends Fragment
 
         this.loadingIcon = (ProgressBar) root.findViewById(R.id.loadingIcon);
 
-        FastReaderApplication app = (FastReaderApplication) getActivity().getApplication();
+        FastReader app = (FastReader) getActivity().getApplication();
         this.bus = app.getBus();
         this.bus.register(this);
         this.spritzer = new Spritzer(getContext(), this.bus, spritzerTextView);

@@ -5,7 +5,7 @@ import android.app.Application;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
-public class FastReaderApplication extends Application
+public class FastReader extends Application
 {
     private Bus mBus;
 

@@ -1,14 +1,13 @@
-package jb.fastreader.activities;
+package jb.fastreader;
 
 import android.preference.PreferenceActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import jb.fastreader.fragments.ConfigurationFragment;
 
-public class ConfigurationActivity extends PreferenceActivity
+public class Configuration extends PreferenceActivity
 {
-    private static final String TAG = ConfigurationActivity.class.getSimpleName();
+    private static final String TAG = Configuration.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -22,7 +21,7 @@ public class ConfigurationActivity extends PreferenceActivity
     @Override
     protected boolean isValidFragment(String fragmentName)
     {
-        return ConfigurationActivity.class.getName().equals(fragmentName);
+        return Configuration.class.getName().equals(fragmentName);
     }
 
 

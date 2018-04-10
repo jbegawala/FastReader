@@ -1,4 +1,4 @@
-package jb.fastreader.activities;
+package jb.fastreader.spritz;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -15,11 +15,9 @@ import android.widget.Toast;
 
 import com.squareup.otto.Bus;
 
-import jb.fastreader.FastReaderApplication;
+import jb.fastreader.FastReader;
 import jb.fastreader.R;
-import jb.fastreader.fragments.ConfigurationFragment;
-import jb.fastreader.fragments.SpritzFragment;
-import jb.fastreader.spritz.Spritzer;
+import jb.fastreader.ConfigurationFragment;
 
 // This is the activity that gets called when you share to this app
 public class MainActivity extends FragmentActivity implements View.OnSystemUiVisibilityChangeListener
@@ -40,7 +38,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
 
         getFragmentManager().beginTransaction().replace(R.id.container, new SpritzFragment(), JB_READER_FRAGMENT).commit();
 
-        FastReaderApplication frApp = (FastReaderApplication) getApplication();
+        FastReader frApp = (FastReader) getApplication();
         this.bus = frApp.getBus();
         this.bus.register(this);
 

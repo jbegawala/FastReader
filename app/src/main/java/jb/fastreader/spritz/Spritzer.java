@@ -21,7 +21,6 @@ import java.util.UUID;
 import cz.msebera.android.httpclient.Header;
 import jb.fastreader.Preferences;
 import jb.fastreader.R;
-import jb.fastreader.formats.*;
 import jb.fastreader.library.Library;
 
 public class Spritzer

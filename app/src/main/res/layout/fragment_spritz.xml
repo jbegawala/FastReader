@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:paddingTop="?android:attr/actionBarSize"
     android:animateLayoutChanges="true"
-    tools:context="jb.fastreader.fragments.SpritzFragment">
+    tools:context="jb.fastreader.spritz.SpritzFragment">
 
     <TextView
         android:id="@+id/contentTitle"

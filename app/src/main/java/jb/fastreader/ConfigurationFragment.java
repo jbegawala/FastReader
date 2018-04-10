@@ -1,11 +1,9 @@
-package jb.fastreader.fragments;
+package jb.fastreader;
 
 import android.os.Bundle;
 import android.app.Fragment;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-
-import jb.fastreader.R;
 
 /**
  * A simple {@link Fragment} for managing user preferences.

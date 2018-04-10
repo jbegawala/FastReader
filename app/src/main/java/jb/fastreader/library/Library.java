@@ -20,6 +20,6 @@ public class Library extends FragmentActivity
 
         setContentView(R.layout.main);
 
-        getFragmentManager().beginTransaction().replace(R.id.activity, new LibraryFragment()).commit();
+        getFragmentManager().beginTransaction().replace(R.id.activity, new Fragment()).commit();
     }
 }

@@ -1,4 +1,4 @@
-package jb.fastreader.http;
+package jb.fastreader.spritz;
 
 import android.content.Context;
 import android.os.AsyncTask;

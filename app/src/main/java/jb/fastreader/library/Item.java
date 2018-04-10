@@ -8,11 +8,11 @@ import jb.fastreader.spritz.ISpritzerMedia;
  * Created by Junaid Begawala on 4/5/18.
  */
 
-class LibraryItem implements Comparable<LibraryItem>
+class Item implements Comparable<Item>
 {
     ISpritzerMedia media;
 
-    LibraryItem(@NonNull ISpritzerMedia media)
+    Item(@NonNull ISpritzerMedia media)
     {
         this.media = media;
     }
@@ -23,7 +23,7 @@ class LibraryItem implements Comparable<LibraryItem>
     }
 
     @Override
-    public int compareTo(@NonNull LibraryItem another)
+    public int compareTo(@NonNull Item another)
     {
         return media.getTitle().compareToIgnoreCase(another.media.getTitle());
     }

@@ -1,9 +1,8 @@
-package jb.fastreader.fragments;
+package jb.fastreader.spritz;
 
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-
 
 /**
  * Created by Junaid Begawala on 3/21/18.

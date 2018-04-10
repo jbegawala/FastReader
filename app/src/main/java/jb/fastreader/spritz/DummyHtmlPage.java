@@ -1,6 +1,4 @@
-package jb.fastreader.formats;
-
-import jb.fastreader.spritz.SpritzerMedia;
+package jb.fastreader.spritz;
 
 /**
  * Created by Junaid Begawala on 2/25/18.
