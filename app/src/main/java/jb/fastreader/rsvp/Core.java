@@ -1,4 +1,4 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import android.content.Context;
 import android.net.Uri;
@@ -19,11 +19,11 @@ import java.io.ObjectOutputStream;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
-import jb.fastreader.Preferences;
+import jb.fastreader.Settings;
 import jb.fastreader.R;
 import jb.fastreader.library.Library;
 
-public class Spritzer
+public class Core
 {
     public enum BusEvent
     {
@@ -38,25 +38,25 @@ public class Spritzer
         COMPLETE
     }
 
-    final private static  String TAG = Spritzer.class.getSimpleName();
+    final private static  String TAG = Core.class.getSimpleName();
 
-    final private Object spritzerThreadSync = new Object();
+    final private Object threadSync = new Object();
     final private Object mediaStatusSync = new Object();
 
     private Context context;
     private Bus bus;
-    private ISpritzerMedia media;
+    private IRSVPMedia media;
     private MediaParseStatus mediaParseStatus;
-    private SpritzerTextView spritzerTextView;
+    private RSVPTextView textView;
 
-    public Spritzer(Context context, Bus bus, TextView spritzerTextView)
+    public Core(Context context, Bus bus, TextView textView)
     {
         Log.v(TAG, "Constructor");
         this.context = context;
-        this.spritzerTextView = (SpritzerTextView) spritzerTextView;
-        this.spritzerTextView.setSyncObject(this.spritzerThreadSync);
-        this.spritzerTextView.setWpm(Preferences.getFastWpm(this.context));
-        this.spritzerTextView.setBus(bus);
+        this.textView = (RSVPTextView) textView;
+        this.textView.setSyncObject(this.threadSync);
+        this.textView.setWpm(Settings.getFastWpm(this.context));
+        this.textView.setBus(bus);
         this.bus = bus;
         this.mediaParseStatus = MediaParseStatus.NOT_STARTED;
     }
@@ -71,7 +71,7 @@ public class Spritzer
             {
                 this.mediaParseStatus = MediaParseStatus.IN_PROGRESS;
             }
-            if ( Preferences.useDummyArticle(this.spritzerTextView.getContext()) )
+            if ( Settings.useDummyArticle(this.textView.getContext()) )
             {
                 this.setMedia(new DummyHtmlPage());
                 synchronized ( this.mediaStatusSync )
@@ -92,35 +92,35 @@ public class Spritzer
         }
     }
 
-    public void setMedia(ISpritzerMedia media)
+    public void setMedia(IRSVPMedia media)
     {
         this.media = media;
-        this.spritzerTextView.setContent(media);
+        this.textView.setContent(media);
     }
 
     public void start()
     {
         Log.i(TAG, "start");
-        this.spritzerTextView.play();
+        this.textView.play();
     }
 
     public void pause()
     {
-        if ( !this.spritzerTextView.isPlaying() )
+        if ( !this.textView.isPlaying() )
         {
             return;
         }
 
         Log.i(TAG, "pause");
-        this.spritzerTextView.pause();
+        this.textView.pause();
 
-        synchronized ( this.spritzerThreadSync )
+        synchronized ( this.threadSync)
         {
-            while (this.spritzerTextView.isPlaying())
+            while (this.textView.isPlaying())
             {
                 try
                 {
-                    this.spritzerThreadSync.wait();
+                    this.threadSync.wait();
                 }
                 catch (InterruptedException e)
                 {
@@ -132,7 +132,7 @@ public class Spritzer
 
     public boolean isPlaying()
     {
-        return this.spritzerTextView.isPlaying();
+        return this.textView.isPlaying();
     }
 
 
@@ -176,7 +176,7 @@ public class Spritzer
                     }
                 }
 
-                Spritzer.this.setMedia(new HtmlPage(title, subtitle, content));
+                Core.this.setMedia(new HtmlPage(title, subtitle, content));
 
                 synchronized (mediaStatusSync)
                 {
@@ -197,7 +197,7 @@ public class Spritzer
 
     public void saveState()
     {
-        // TODO: Save State with SpritzerMedia
+        // TODO: Save State with Media
     }
 
     private void saveParsedContent()
@@ -221,11 +221,11 @@ public class Spritzer
 
     public void setWpm(int wpm)
     {
-        this.spritzerTextView.setWpm(wpm);
+        this.textView.setWpm(wpm);
     }
 
 
-    public ISpritzerMedia getMedia() {
+    public IRSVPMedia getMedia() {
         return media;
     }
 
@@ -263,40 +263,9 @@ public class Spritzer
         this.media.rewindCurrentParagraph();
     }
 
-//    /**
-//     * Load the given chapter as sanitized text, proceeding
-//     * to the next chapter until a non-zero length result is found.
-//     *
-//     * This method is useful because some "Chapters" contain only HTML data
-//     * that isn't useful to a SpritzerCore.
-//     *
-//     * @param chapter the first chapter to load
-//     * @return the sanitized text of the first non-zero length chapter
-//     */
-//    private String loadCleanStringFromNextNonEmptyChapter(int chapter) {
-//        int chapterToTry = chapter;
-//        String result = "";
-//        while(result.length() == 0 && chapterToTry <= getMaxChapter()) {
-//            result = loadCleanStringFromChapter(chapterToTry);
-//            chapterToTry++;
-//        }
-//        return result;
-//    }
-
-//    /**
-//     * Load the given chapter as sanitized text.
-//     *
-//     * @param chapter the target chapter.
-//     * @return the sanitized chapter text.
-//     */
-//    private String loadCleanStringFromChapter(int chapter) {
-//        return media.loadChapter(chapter);
-//    }
-
-
     private void reportFileUnsupported()
     {
-        Toast.makeText(this.spritzerTextView.getContext(), this.spritzerTextView.getContext().getString(R.string.unsupported_file), Toast.LENGTH_LONG).show();
+        Toast.makeText(this.textView.getContext(), this.textView.getContext().getString(R.string.unsupported_file), Toast.LENGTH_LONG).show();
     }
 
     public static boolean isUriSupported(Uri uri)
@@ -309,62 +278,9 @@ public class Spritzer
         return uri.getScheme() != null && uri.getScheme().contains("http");
     }
 
-//    /**
-//     * Return a String representing the maxChars most recently
-//     * Spritzed characters.
-//     *
-//     * @param maxChars The max number of characters to return. Pass a value less than 1 for no limit.
-//     * @return The maxChars number of most recently spritzed characters during this segment
-//     */
-//    public String getHistoryString(int maxChars) {
-//        if (maxChars <= 0) maxChars = Integer.MAX_VALUE;
-//        if (mCurWordIdx < 2 || mDisplayWordList.size() < 2) return "";
-//        StringBuilder builder = new StringBuilder();
-//        int numWords = 0;
-//        while (builder.length() + mDisplayWordList.get(mCurWordIdx - (numWords + 2)).length() < maxChars) {
-//            builder.insert(0, mDisplayWordList.get(mCurWordIdx - (numWords + 2)) + " ");
-//            numWords++;
-//            if (mCurWordIdx - (numWords + 2) < 0) break;
-//        }
-//        return builder.toString();
-//    }
-
-
-//
-//    /**
-//     * Swap the target TextView. Call this if your
-//     * host Activity is Destroyed and Re-Created.
-//     * Effective immediately.
-//     *
-//     * @param target
-//     */
-//    void swapTextView(TextView target) {
-//        Log.i(TAG, "swapTextView");
-//        spritzerTextView = target;
-//        if (!this.isPlaying)
-//        {
-//            peekNextWord();
-//        }
-//    }
-
 //    private int calculateMonospacedCharacterLimit()
 //    {
-//        //should be called on SpritzerTextView
 //        int maxChars = Math.round(this.getWidth() / this.calculateLengthOfPrintedMonospaceCharacters(1));
 //        return maxChars * this.getLineCount();
 //    }
-
-    //    public void clearText() {
-//        wordList.clear();
-//        wordArray = null;
-//        mCurWordIdx = 0;
-//    }
-//
-//    public String getNextWord() {
-//        if (!isWordListComplete()) {
-//            return wordList.get(mCurWordIdx);
-//        }
-//        return null;
-//    }
-
 }

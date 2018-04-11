@@ -15,7 +15,7 @@ public class Configuration extends PreferenceActivity
         super.onCreate(savedInstanceState);
         // Nothing to go back to yet
         // getActionBar().setDisplayHomeAsUpEnabled(true);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new ConfigurationFragment()).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
     }
 
     @Override

@@ -2,7 +2,7 @@ package jb.fastreader.library;
 
 import android.support.annotation.NonNull;
 
-import jb.fastreader.spritz.ISpritzerMedia;
+import jb.fastreader.rsvp.IRSVPMedia;
 
 /**
  * Created by Junaid Begawala on 4/5/18.
@@ -10,9 +10,9 @@ import jb.fastreader.spritz.ISpritzerMedia;
 
 class Item implements Comparable<Item>
 {
-    ISpritzerMedia media;
+    IRSVPMedia media;
 
-    Item(@NonNull ISpritzerMedia media)
+    Item(@NonNull IRSVPMedia media)
     {
         this.media = media;
     }

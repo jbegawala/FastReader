@@ -18,10 +18,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import jb.fastreader.R;
-import jb.fastreader.spritz.SpritzFragment;
-import jb.fastreader.spritz.ISpritzerMedia;
+import jb.fastreader.rsvp.IRSVPMedia;
 
-import static jb.fastreader.spritz.MainActivity.JB_READER_FRAGMENT;
+import static jb.fastreader.rsvp.RSVP.RSVP_FRAGMENT;
 
 /**
  * Created by Junaid Begawala on 4/8/18.
@@ -49,15 +48,15 @@ public class Fragment extends ListFragment
     {
         super.onListItemClick(l, v, position, id);
 
-        SpritzFragment spritzFragment = (SpritzFragment) getFragmentManager().findFragmentByTag(JB_READER_FRAGMENT);
-        if ( spritzFragment == null )
+        jb.fastreader.rsvp.Fragment fragment = (jb.fastreader.rsvp.Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT);
+        if ( fragment == null )
         {
-            spritzFragment = new SpritzFragment();
+            fragment = new jb.fastreader.rsvp.Fragment();
         }
         Bundle bundle = new Bundle();
         bundle.putSerializable("media", this.items.get(position).media);
-        spritzFragment.setArguments(bundle);
-        getFragmentManager().beginTransaction().replace(R.id.activity, spritzFragment, JB_READER_FRAGMENT).addToBackStack(null).commit();
+        fragment.setArguments(bundle);
+        getFragmentManager().beginTransaction().replace(R.id.activity, fragment, RSVP_FRAGMENT).addToBackStack(null).commit();
     }
 
     private void scanAndLoadMedia()
@@ -74,9 +73,8 @@ public class Fragment extends ListFragment
 
             try ( FileInputStream fis = new FileInputStream(article) )
             {
-                ;
                 ObjectInputStream ois = new ObjectInputStream(fis);
-                ISpritzerMedia media = (ISpritzerMedia) ois.readObject();
+                IRSVPMedia media = (IRSVPMedia) ois.readObject();
 
                 if ( media != null )
                 {

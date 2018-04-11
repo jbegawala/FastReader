@@ -1,4 +1,4 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import android.content.Context;
 import android.os.AsyncTask;

@@ -8,8 +8,6 @@ You can share URLs to Glance from your favorite web browser, or open .epubs on y
 
 Available on Google Play under the name **Glance**
 
-[![Glance](https://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=pro.dbro.openspritz)
-
 ## Lend a hand
 
 Some quick, incomplete thoughts on what's next.

@@ -1,5 +1,6 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -20,9 +21,9 @@ import jb.fastreader.R;
 /**
  * Created by andrewgiang on 3/3/14.
  */
-public class SpritzerTextView extends AppCompatTextView
+public class RSVPTextView extends AppCompatTextView
 {
-    public static final String TAG = SpritzerTextView.class.getSimpleName();
+    public static final String TAG = RSVPTextView.class.getSimpleName();
 
     public static final int PAINT_WIDTH_DP = 4;          // thickness of guide bars in dp
                                                          // For optimal drawing should be an even number
@@ -33,33 +34,34 @@ public class SpritzerTextView extends AppCompatTextView
     private Path topPivotPath;
     private Path bottomPivotPath;
 
-    private ISpritzerMedia content = null;
+    private Activity activity;
+    private IRSVPMedia content = null;
     private boolean isPlaying;
     private boolean isPlayingRequest;
     private boolean threadStarted;
-    private Object spritzerThreadSync;
+    private Object threadSync;
     private int wpm;
     private Bus bus;
 
-    public SpritzerTextView(Context context)
+    public RSVPTextView(Context context)
     {
         super(context);
         init();
     }
 
-    public SpritzerTextView(Context context, AttributeSet attrs)
+    public RSVPTextView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
         init(attrs);
     }
 
-    public SpritzerTextView(Context context, AttributeSet attrs, int defStyle)
+    public RSVPTextView(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
         init(attrs);
     }
 
-    void setContent(ISpritzerMedia content)
+    void setContent(IRSVPMedia content)
     {
         this.content = content;
     }
@@ -110,6 +112,11 @@ public class SpritzerTextView extends AppCompatTextView
     void setBus(Bus bus)
     {
         this.bus = bus;
+    }
+
+    void setActivity(Activity activity)
+    {
+        this.activity = activity;
     }
 
     @Override
@@ -196,12 +203,12 @@ public class SpritzerTextView extends AppCompatTextView
     {
         // Measure the rendered distance of CHARS_LEFT_OF_PIVOT chars
         // plus half the pivot character
-        return this.calculateLengthOfPrintedMonospaceCharacters(SpritzerMedia.CHARS_LEFT_OF_PIVOT + .50f);
+        return this.calculateLengthOfPrintedMonospaceCharacters(Media.CHARS_LEFT_OF_PIVOT + .50f);
     }
 
-    void setSyncObject(Object spritzerThreadSync)
+    void setSyncObject(Object threadSync)
     {
-        this.spritzerThreadSync = spritzerThreadSync;
+        this.threadSync = threadSync;
     }
 
     private int calculateLengthOfPrintedMonospaceCharacters(float numCharacters)
@@ -225,18 +232,45 @@ public class SpritzerTextView extends AppCompatTextView
         this.isPlayingRequest = true;
 
         // start background thread
-        synchronized ( this.spritzerThreadSync )
+        synchronized ( this.threadSync)
         {
             if ( !this.threadStarted )
             {
-                new Thread(new SpritzerThread(this)).start();
+                this.activity.runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run() {
+                        new Thread(new Runnable()
+                        {
+                            @Override
+                            public void run() {
+                                RSVPTextView.this.setIsPlaying();
+
+                                while (RSVPTextView.this.shouldPlay())
+                                {
+                                    try
+                                    {
+                                        RSVPTextView.this.showOneWord();
+                                    }
+
+                                    catch (InterruptedException e)
+                                    {
+                                        Log.e(TAG, "Exception while playing");
+                                        e.printStackTrace();
+                                    }
+                                }
+                                RSVPTextView.this.setNotPlaying();
+                            }
+                        }).start();
+                    }
+                });
             }
         }
     }
     void setIsPlaying()
     {
         this.isPlaying = true;
-        synchronized ( this.spritzerThreadSync )
+        synchronized ( this.threadSync)
         {
             this.threadStarted = true;
         }
@@ -245,16 +279,16 @@ public class SpritzerTextView extends AppCompatTextView
     void setNotPlaying()
     {
         this.isPlaying = false;
-        synchronized ( this.spritzerThreadSync )
+        synchronized ( this.threadSync)
         {
 
-            this.spritzerThreadSync.notify();
+            this.threadSync.notify();
         }
         this.threadStarted = false;
 
         if ( this.content != null & !this.content.hasNext() )
         {
-            this.bus.post(Spritzer.BusEvent.CONTENT_FINISHED);
+            this.bus.post(Core.BusEvent.CONTENT_FINISHED);
         }
     }
 
@@ -291,13 +325,13 @@ public class SpritzerTextView extends AppCompatTextView
             return;
         }
 
-        SpritzerWord spritzerWord = this.content.next();
+        Word word = this.content.next();
 
-        Spannable spanRange = new SpannableString(spritzerWord.getWord());
+        Spannable spanRange = new SpannableString(word.getWord());
         TextAppearanceSpan tas = new TextAppearanceSpan(getContext(), R.style.PivotLetter);
-        spanRange.setSpan(tas, spritzerWord.getPivotPosition(), spritzerWord.getPivotPosition()+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spanRange.setSpan(tas, word.getPivotPosition(), word.getPivotPosition()+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         this.setText(spanRange);
 
-        Thread.sleep(this.getInterWordDelay() * spritzerWord.getDelayFactor());
+        Thread.sleep(this.getInterWordDelay() * word.getDelayFactor());
     }
 }

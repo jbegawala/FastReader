@@ -1,11 +1,11 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import java.io.Serializable;
 
 /**
  * Created by Junaid Begawala on 4/8/18.
  */
-public interface ISpritzerMedia extends Serializable
+public interface IRSVPMedia extends Serializable
 {
 
     String getTitle();
@@ -24,5 +24,5 @@ public interface ISpritzerMedia extends Serializable
 
     boolean hasNext();
 
-    SpritzerWord next();
+    Word next();
 }

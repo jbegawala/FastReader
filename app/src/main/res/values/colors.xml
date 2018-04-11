@@ -8,11 +8,8 @@
     <color name="ultra_subdued_text">#ff7f7f7f</color>
     <color name="ultra_subdued_text_dark">#ff808080</color>
 
-    <color name="spritz_text">#ff1b1b1b</color>
-    <color name="spritz_text_dark">#ffdddddd</color>
-
-    <color name="spritz_bg">#ffececec</color>
-    <color name="spritz_bg_dark">#ff171717</color>
+    <color name="background_light">#ffececec</color>
+    <color name="background_dark">#ff171717</color>
 
     <color name="guide">#DDDDDD</color>
     <color name="chapter_text_color">#33B5E5</color>

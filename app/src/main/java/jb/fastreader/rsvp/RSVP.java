@@ -1,4 +1,4 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -17,13 +17,13 @@ import com.squareup.otto.Bus;
 
 import jb.fastreader.FastReader;
 import jb.fastreader.R;
-import jb.fastreader.ConfigurationFragment;
+import jb.fastreader.SettingsFragment;
 
 // This is the activity that gets called when you share to this app
-public class MainActivity extends FragmentActivity implements View.OnSystemUiVisibilityChangeListener
+public class RSVP extends FragmentActivity implements View.OnSystemUiVisibilityChangeListener
 {
-    public static final String TAG = MainActivity.class.getSimpleName();
-    public static final String JB_READER_FRAGMENT = "jbreaderfragment";
+    public static final String TAG = RSVP.class.getSimpleName();
+    public static final String RSVP_FRAGMENT = "RSVP_FRAGMENT";
     private Bus bus;
 
     @Override
@@ -34,9 +34,9 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
 
         super.onCreate(savedInstanceState);
         this.setupActionBar();
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.rsvp);
 
-        getFragmentManager().beginTransaction().replace(R.id.container, new SpritzFragment(), JB_READER_FRAGMENT).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container, new Fragment(), RSVP_FRAGMENT).commit();
 
         FastReader frApp = (FastReader) getApplication();
         this.bus = frApp.getBus();
@@ -94,7 +94,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
                 Log.w(TAG, getResources().getString(R.string.error_could_not_parse_uri) + extraText);
                 Toast.makeText(getApplicationContext(), R.string.error_could_not_parse_uri + extraText, Toast.LENGTH_LONG).show();
             }
-            else if ( !Spritzer.isUriSupported(uri) )
+            else if ( !Core.isUriSupported(uri) )
             {
                 Log.w(TAG, getResources().getString(R.string.error_unsupported_uri) + extraText);
                 Toast.makeText(getApplicationContext(), R.string.error_unsupported_uri + extraText, Toast.LENGTH_LONG).show();
@@ -102,7 +102,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
             else
             {
                 Log.i(TAG, "onResume: ACTION_SENT called with uri: " + uri.toString());
-                this.getSpritzFragment().openURI(uri);
+                this.getFragment().openURI(uri);
             }
         }
 
@@ -160,7 +160,7 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
         if (id == R.id.action_config)
         {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, ConfigurationFragment.newInstance(), "config");
+            ft.replace(R.id.container, SettingsFragment.newInstance(), "config");
             ft.addToBackStack(null);
             ft.commit();
             return true;
@@ -169,9 +169,9 @@ public class MainActivity extends FragmentActivity implements View.OnSystemUiVis
         return super.onOptionsItemSelected(item);
     }
 
-    private SpritzFragment getSpritzFragment()
+    private Fragment getFragment()
     {
-        return ((SpritzFragment) getFragmentManager().findFragmentByTag(JB_READER_FRAGMENT));
+        return ((Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT));
     }
 
     @Override

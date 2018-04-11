@@ -1,4 +1,4 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import android.util.Log;
 
@@ -8,9 +8,9 @@ import java.io.Serializable;
  * Created by Junaid Begawala on 3/21/18.
  */
 
-class SpritzerWord implements Serializable
+class Word implements Serializable
 {
-    private static final String TAG = SpritzerWord.class.getSimpleName();
+    private static final String TAG = Word.class.getSimpleName();
 
     private String word;
     private int pivotPosition;
@@ -23,7 +23,7 @@ class SpritzerWord implements Serializable
      * Creates an object that holds a short string that is flashed to the user
      * @param word String to flash
      */
-    SpritzerWord(String word, boolean isNewWord, boolean isNewSentence, boolean isNewParagraph)
+    Word(String word, boolean isNewWord, boolean isNewSentence, boolean isNewParagraph)
     {
         if ( word.isEmpty() )
         {
@@ -48,13 +48,13 @@ class SpritzerWord implements Serializable
     {
         StringBuilder builder = new StringBuilder();
 
-        if ( word.length() > SpritzerMedia.CHARS_LEFT_OF_PIVOT * 2 )
+        if ( word.length() > Media.CHARS_LEFT_OF_PIVOT * 2 )
         {
-            this.pivotPosition = SpritzerMedia.CHARS_LEFT_OF_PIVOT;
+            this.pivotPosition = Media.CHARS_LEFT_OF_PIVOT;
         }
         else if ( word.length() == 1 )
         {
-            for ( int i = 0; i < SpritzerMedia.CHARS_LEFT_OF_PIVOT; i++ )
+            for (int i = 0; i < Media.CHARS_LEFT_OF_PIVOT; i++ )
             {
                 builder.append(" ");
             }
@@ -64,7 +64,7 @@ class SpritzerWord implements Serializable
         else
         {
             int mid = word.length() / 2;
-            int start = SpritzerMedia.CHARS_LEFT_OF_PIVOT - mid;
+            int start = Media.CHARS_LEFT_OF_PIVOT - mid;
             for ( int i = 0; i <= start; i++ )
             {
                 builder.append(" ");
@@ -91,7 +91,7 @@ class SpritzerWord implements Serializable
             return 3;
         }
 
-        else if ( word.length() >= SpritzerMedia.LONG_WORD_DELAY_THRESHOLD )
+        else if ( word.length() >= Media.LONG_WORD_DELAY_THRESHOLD )
         {
             return 2;
         }

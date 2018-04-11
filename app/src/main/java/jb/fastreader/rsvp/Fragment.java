@@ -1,4 +1,4 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import android.app.ActionBar;
 import android.content.Context;
@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
-import android.app.Fragment;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -23,7 +22,7 @@ import android.widget.TextView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
-import jb.fastreader.Preferences;
+import jb.fastreader.Settings;
 import jb.fastreader.FastReader;
 import jb.fastreader.R;
 
@@ -32,11 +31,11 @@ import android.widget.Toast;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class SpritzFragment extends Fragment
+public class Fragment extends android.app.Fragment
 {
-    private static final String TAG = SpritzFragment.class.getSimpleName();
+    private static final String TAG = Fragment.class.getSimpleName();
 
-    private Spritzer spritzer;
+    private Core core;
 
     // Meta UI components
     private TextView contentTitle;
@@ -50,18 +49,17 @@ public class SpritzFragment extends Fragment
     private ImageView rewindCurParagraph;
     private ProgressBar loadingIcon;
 
-    private TextView spritzHistoryView;
-    private SpritzerTextView spritzerTextView;
+    private RSVPTextView textView;
     private Bus bus;
 
-    public SpritzFragment() { }
+    public Fragment() { }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.i(TAG, "onCreateView: start");
         // Inflate the layout for this fragment
-        final View root = inflater.inflate(R.layout.fragment_spritz, container, false);
+        final View root = inflater.inflate(R.layout.rsvp_fragment, container, false);
         this.contentTitle = ((TextView) root.findViewById(R.id.contentTitle));
         this.contentSubtitle = ((TextView) root.findViewById(R.id.contentSubtitle));
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
@@ -72,11 +70,6 @@ public class SpritzFragment extends Fragment
         this.statusText = ((TextView) root.findViewById(R.id.statusText));
         this.statusVisual = ((ProgressBar) root.findViewById(R.id.statusVisual));
 
-        this.spritzHistoryView = (TextView) root.findViewById(R.id.spritzHistory);
-        this.spritzerTextView = (SpritzerTextView) root.findViewById(R.id.spritzText);
-        //spritzerTextView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
-        //spritzHistoryView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
-
         this.speedQuickToggle = (Switch) root.findViewById(R.id.speedSwitch);
         this.speedQuickToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
@@ -84,16 +77,32 @@ public class SpritzFragment extends Fragment
             public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked)
             {
                 Context context = getActivity().getBaseContext();
-                int wpm = isChecked ? Preferences.getFastWpm(context) : Preferences.getSlowWpm(context);
-                SpritzFragment.this.spritzer.setWpm(wpm);
+                int wpm = isChecked ? Settings.getFastWpm(context) : Settings.getSlowWpm(context);
+                Fragment.this.core.setWpm(wpm);
             }
         });
 
-        SpritzTouchListener touchListener = new SpritzTouchListener(this, this.spritzHistoryView);
-        this.spritzerTextView.setOnTouchListener(touchListener);
+        this.textView = (RSVPTextView) root.findViewById(R.id.RSVPTextView);
+        //this.textView.setTypeface(Typeface.createFromAsset(getActivity().getAssets(), "UbuntuMono-R.ttf"));
+        this.textView.setActivity(getActivity());
+        this.textView.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Fragment.this.pause();
+            }
+        });
 
         this.playButtonView = (ImageView) root.findViewById(R.id.playButtonView);
-        this.playButtonView.setOnTouchListener(touchListener);
+        this.playButtonView.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Fragment.this.play();
+            }
+        });
 
         this.rewindCurSentence = (ImageView) root.findViewById(R.id.rewindCurrentSentence);
         this.rewindCurSentence.setOnClickListener(new View.OnClickListener()
@@ -101,8 +110,8 @@ public class SpritzFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                SpritzFragment.this.spritzer.rewindCurrentSentence();
-                SpritzFragment.this.startSpritzer();
+                Fragment.this.core.rewindCurrentSentence();
+                Fragment.this.play();
             }
         });
         this.rewindPrevSentence = (ImageView) root.findViewById(R.id.rewindPreviousSentence);
@@ -111,8 +120,8 @@ public class SpritzFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                SpritzFragment.this.spritzer.rewindPreviousSentence();
-                SpritzFragment.this.startSpritzer();
+                Fragment.this.core.rewindPreviousSentence();
+                Fragment.this.play();
             }
         });
         this.rewindCurParagraph = (ImageView) root.findViewById(R.id.rewindCurrentParagraph);
@@ -121,8 +130,8 @@ public class SpritzFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                SpritzFragment.this.spritzer.rewindCurrentParagraph();
-                SpritzFragment.this.startSpritzer();
+                Fragment.this.core.rewindCurrentParagraph();
+                Fragment.this.play();
             }
         });
 
@@ -132,14 +141,14 @@ public class SpritzFragment extends Fragment
         FastReader app = (FastReader) getActivity().getApplication();
         this.bus = app.getBus();
         this.bus.register(this);
-        this.spritzer = new Spritzer(getContext(), this.bus, spritzerTextView);
+        this.core = new Core(getContext(), this.bus, textView);
         Bundle bundle = getArguments();
         if ( bundle != null )
         {
-            ISpritzerMedia media = (ISpritzerMedia) getArguments().getSerializable("media");
+            IRSVPMedia media = (IRSVPMedia) getArguments().getSerializable("media");
             if ( media != null )
             {
-                this.spritzer.setMedia(media);
+                this.core.setMedia(media);
             }
         }
 
@@ -152,7 +161,7 @@ public class SpritzFragment extends Fragment
         super.onResume();
 
         // Should this just call pause/startSprizter?
-        if (!this.spritzer.isPlaying())
+        if (!this.core.isPlaying())
         {
             this.updateMetaInfo();
             this.showMetaInfo();
@@ -165,39 +174,39 @@ public class SpritzFragment extends Fragment
 
     public void openURI(Uri mediaUri)
     {
-        if (this.spritzer == null)
+        if (this.core == null)
         {
-            Toast.makeText(getContext().getApplicationContext(), "Spritz app not loaded", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext().getApplicationContext(), RSVP.class.getSimpleName() + " app not loaded", Toast.LENGTH_LONG).show();
         }
         else
         {
-            this.spritzer.openMedia(mediaUri);
-            if ( this.spritzer.getMediaParseStatus() == Spritzer.MediaParseStatus.IN_PROGRESS )
+            this.core.openMedia(mediaUri);
+            if ( this.core.getMediaParseStatus() == Core.MediaParseStatus.IN_PROGRESS )
             {
-                this.initSpritzer();
+                this.init();
             }
             else
             {
-                this.pauseSpritzer();
+                this.pause();
             }
         }
     }
 
     @Subscribe
-    public void ProcessBusEvent(Spritzer.BusEvent event)
+    public void ProcessBusEvent(Core.BusEvent event)
     {
         Log.i(TAG, "ProcessBusEvent: " + event.name());
-        if (event == Spritzer.BusEvent.CONTENT_PARSED)
+        if (event == Core.BusEvent.CONTENT_PARSED)
         {
             this.loadingIcon.setVisibility(View.INVISIBLE);
-            this.pauseSpritzer();
+            this.pause();
         }
-        else if (event == Spritzer.BusEvent.CONTENT_FINISHED)
+        else if (event == Core.BusEvent.CONTENT_FINISHED)
         {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    SpritzFragment.this.endOfArticle();
+                    Fragment.this.endOfArticle();
                 }
             });
         }
@@ -205,43 +214,43 @@ public class SpritzFragment extends Fragment
 
     void userTap()
     {
-        if (this.spritzer.isPlaying())
+        if (this.core.isPlaying())
         {
-            this.pauseSpritzer();
+            this.pause();
         }
         else
         {
-            this.startSpritzer();
+            this.play();
         }
     }
 
-    private void initSpritzer()
+    private void init()
     {
         this.updateMetaInfo();
         this.showMetaInfo();
-        this.spritzerTextView.setVisibility(View.INVISIBLE);
+        this.textView.setVisibility(View.INVISIBLE);
         this.loadingIcon.setVisibility(View.VISIBLE);
         this.hideNavButtons();
         this.showActionBar();
     }
 
-    private void pauseSpritzer()
+    private void pause()
     {
-        this.spritzer.pause();
+        this.core.pause();
         this.updateMetaInfo();
         this.showMetaInfo();
-        this.spritzerTextView.setVisibility(View.INVISIBLE);
+        this.textView.setVisibility(View.INVISIBLE);
         this.showNavButtons();
         this.showActionBar();
     }
 
-    private void startSpritzer()
+    private void play()
     {
         this.hideMetaInfo();
-        this.spritzerTextView.setVisibility(View.VISIBLE);
+        this.textView.setVisibility(View.VISIBLE);
         this.hideNavButtons();
         this.hideActionBar();
-        this.spritzer.start();
+        this.core.start();
     }
 
     private void hideNavButtons()
@@ -264,8 +273,8 @@ public class SpritzFragment extends Fragment
     {
         this.updateMetaInfo();
         this.showMetaInfo();
-        this.spritzerTextView.setVisibility(View.INVISIBLE);
-        this.playButtonView.setVisibility(View.INVISIBLE);
+        this.textView.setVisibility(View.INVISIBLE);
+        this.hideNavButtons();
         this.showActionBar();
     }
 
@@ -317,12 +326,12 @@ public class SpritzFragment extends Fragment
 
     public void updateMetaInfo()
     {
-        if ( !this.spritzer.isMediaSelected() )
+        if ( !this.core.isMediaSelected() )
         {
             return;
         }
 
-        ISpritzerMedia content = this.spritzer.getMedia();
+        IRSVPMedia content = this.core.getMedia();
         this.contentTitle.setText(content.getTitle());
 
         String subtitle;
@@ -336,8 +345,8 @@ public class SpritzFragment extends Fragment
         }
         this.contentSubtitle.setText(subtitle);
 
-        int currentWord = this.spritzer.getCurrentWordNumber();
-        int wordCount = this.spritzer.getWordCount();
+        int currentWord = this.core.getCurrentWordNumber();
+        int wordCount = this.core.getWordCount();
         if ( wordCount == 0 )
         {
             this.statusVisual.setIndeterminate(true);
@@ -360,9 +369,9 @@ public class SpritzFragment extends Fragment
     public void onStop()
     {
         super.onStop();
-        if (this.spritzer != null)
+        if (this.core != null)
         {
-            this.spritzer.saveState();
+            this.core.saveState();
         }
     }
 

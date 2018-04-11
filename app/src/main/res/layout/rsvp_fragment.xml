@@ -5,18 +5,17 @@
     android:layout_height="match_parent"
     android:paddingTop="?android:attr/actionBarSize"
     android:animateLayoutChanges="true"
-    tools:context="jb.fastreader.spritz.SpritzFragment">
+    tools:context="jb.fastreader.rsvp.Fragment">
 
     <TextView
         android:id="@+id/contentTitle"
         style="@style/SubduedTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/spritzer_title_margin_left"
+        android:layout_marginStart="@dimen/inner_margin"
+        android:layout_marginEnd="@dimen/inner_margin"
         android:ellipsize="marquee"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:textSize="@dimen/spritzer_title_text_size"
+        android:textSize="24sp"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_marginTop="0dp" />
@@ -26,49 +25,28 @@
         style="@style/UltraSubduedTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/contentTitle"
         android:layout_below="@id/contentTitle"
+        android:layout_alignStart="@id/contentTitle"
+        android:layout_alignEnd="@+id/contentTitle"
         android:ellipsize="marquee"
         android:maxLines="1"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:textSize="@dimen/spritzer_author_text_size" />
+        android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/spritzHistory"
-        style="@style/SubduedTextStyle"
-        android:layout_width="@dimen/spritzer_text_view_width"
-        android:layout_height="10dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/spritzer_top_margin"
-        android:alpha="0"
-        android:gravity="bottom|start"
-        android:textSize="@dimen/spritzer_history_text_size"
-        android:typeface="monospace" />
-
-    <TextView
-        android:id="@+id/spritzHistoryCurtain"
-        android:layout_width="wrap_content"
-        android:layout_height="18dip"
-        android:layout_alignLeft="@id/spritzHistory"
-        android:layout_alignRight="@id/spritzHistory"
-        android:layout_alignTop="@id/spritzHistory"
-        android:background="?attr/spritz_history_curtain"
-        android:gravity="center_horizontal"
-        android:textColor="?attr/ultra_subdued_text" />
-
-    <jb.fastreader.spritz.SpritzerTextView
-        android:id="@+id/spritzText"
-        android:layout_width="@dimen/spritzer_text_view_width"
+    <jb.fastreader.rsvp.RSVPTextView
+        android:id="@+id/RSVPTextView"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/spritzHistory"
+        android:layout_below="@+id/contentSubtitle"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
         android:clickable="true"
         android:focusableInTouchMode="true"
         android:gravity="start"
         android:keepScreenOn="true"
-        android:textSize="@dimen/spritzer_text_view_text_size"
-        android:typeface="monospace" />
+        android:textSize="30sp"
+        android:typeface="monospace"
+        android:visibility="visible"
+        tools:text="hello" />
 
     <ProgressBar
         android:id="@+id/loadingIcon"
@@ -78,23 +56,22 @@
         android:minHeight="80dp"
         android:minWidth="80dp"
         android:visibility="invisible"
-        android:layout_below="@+id/spritzHistory"
+        android:layout_alignTop="@+id/RSVPTextView"
         android:layout_centerHorizontal="true" />
 
     <ImageView
         android:id="@+id/rewindCurrentParagraph"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/loadingIcon"
-        android:layout_alignStart="@+id/contentSubtitle"
-        android:layout_marginStart="12dp"
         android:adjustViewBounds="true"
         android:maxHeight="80dp"
         android:maxWidth="90dp"
         android:minHeight="80dp"
         android:minWidth="80dp"
         android:src="@drawable/left3"
-        android:visibility="visible" />
+        android:layout_marginLeft="20dp"
+        android:layout_alignTop="@+id/RSVPTextView"
+        android:layout_alignStart="@+id/contentTitle" />
 
     <ImageView
         android:id="@+id/rewindPreviousSentence"
@@ -119,7 +96,7 @@
         android:minWidth="80dp"
         android:visibility="visible"
         android:src="@drawable/left1"
-        android:layout_alignTop="@+id/playButtonView"
+        android:layout_alignTop="@+id/rewindPreviousSentence"
         android:layout_toEndOf="@+id/rewindPreviousSentence" />
 
     <ImageView
@@ -132,7 +109,7 @@
         android:minHeight="80dp"
         android:minWidth="80dp"
         android:src="@android:drawable/ic_media_play"
-        android:layout_alignTop="@+id/rewindPreviousSentence"
+        android:layout_alignTop="@+id/rewindCurrentSentence"
         android:layout_toEndOf="@+id/rewindCurrentSentence" />
 
     <ProgressBar
@@ -141,8 +118,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="@dimen/progress_margin"
-        android:layout_marginRight="@dimen/progress_margin"
+        android:layout_marginLeft="@dimen/inner_margin"
+        android:layout_marginRight="@dimen/inner_margin"
         android:indeterminate="false"
         android:visibility="invisible" />
 
@@ -153,11 +130,11 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/statusVisual"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="@dimen/chapter_margin"
-        android:layout_marginLeft="@dimen/chapter_margin"
+        android:layout_marginBottom="@dimen/inner_margin"
+        android:layout_marginLeft="@dimen/inner_margin"
         android:clickable="true"
         android:textColor="@color/chapter_text_color"
-        android:textSize="@dimen/chapter_text_size" />
+        android:textSize="22sp" />
 
     <Switch
         android:id="@+id/speedSwitch"

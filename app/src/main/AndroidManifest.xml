@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="jb.fastreader.spritz.MainActivity" >
+        <activity android:name="jb.fastreader.rsvp.RSVP" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

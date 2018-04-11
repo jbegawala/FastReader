@@ -1,4 +1,4 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,7 @@ import java.util.List;
 /**
  * Created by Junaid Begawala on 3/27/18.
  */
-
-public abstract class SpritzerMedia implements ISpritzerMedia
+public abstract class Media implements IRSVPMedia
 {
     static final int CHARS_LEFT_OF_PIVOT = 3;
     static final int LONG_WORD_DELAY_THRESHOLD = 8;
@@ -18,7 +17,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     private static int PARAGRAPH = 2;
     private String title;
     private String uri;
-    private ArrayList<SpritzerWord> content;
+    private ArrayList<Word> content;
     private int contentLength;
     private int wordCount;
 
@@ -37,7 +36,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
      * @param uri Uri of content
      * @param text A string without any markup or formatting
      */
-    public SpritzerMedia(String title, String uri, String text)
+    public Media(String title, String uri, String text)
     {
         this.title = title;
         this.uri = uri;
@@ -58,7 +57,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
         String word;
         boolean isNewParagraph;
         boolean isNewSentence;
-        ArrayList<SpritzerWord> wordList = new ArrayList<>();
+        ArrayList<Word> wordList = new ArrayList<>();
 
         paragraphs = input.trim().replaceAll("/\\s+/g", " ").replaceAll(" ?[\\r\\n]+", "\n").split("\\n");
         for (int p = 0; p < paragraphs.length; p++)
@@ -72,13 +71,13 @@ public abstract class SpritzerMedia implements ISpritzerMedia
                     isNewSentence = (w == 0);
                     isNewParagraph = (w == 0) && (s == 0);
                     word = words[w].trim();
-                    if ( w + 1 == words.length )  // add period back to end of sentence
-                    {
-                        word += ".";
-                    }
                     if (word.isEmpty())
                     {
                         continue;
+                    }
+                    if ( w + 1 == words.length )  // add period back to end of sentence
+                    {
+                        word += ".";
                     }
 
                     if (word.length() > maxWordLength)
@@ -102,7 +101,7 @@ public abstract class SpritzerMedia implements ISpritzerMedia
      */
     private void indexContent()
     {
-        SpritzerWord spritzerWord;
+        Word word;
         this.mapToIndex = new ArrayList<>(3);
         this.mapToIndex.add(WORD, new ArrayList<Integer>());
         this.mapToIndex.add(SENTENCE, new ArrayList<Integer>());
@@ -111,14 +110,14 @@ public abstract class SpritzerMedia implements ISpritzerMedia
 
         for ( int i = 0; i < this.contentLength; i++ )
         {
-            spritzerWord = this.content.get(i);
-            if ( spritzerWord.isNewWord() )
+            word = this.content.get(i);
+            if ( word.isNewWord() )
             {
                 this.mapToIndex.get(WORD).add(i);
-                if ( spritzerWord.isNewSentence() )
+                if ( word.isNewSentence() )
                 {
                     this.mapToIndex.get(SENTENCE).add(i);
-                    if ( spritzerWord.isNewParagraph() )
+                    if ( word.isNewParagraph() )
                     {
                         this.mapToIndex.get(PARAGRAPH).add(i);
                     }
@@ -137,13 +136,13 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     }
 
     /**
-     * Generates an array of {@link SpritzerWord} from given string array
-     * @param wordList Array of {@link SpritzerWord} to add to
+     * Generates an array of {@link Word} from given string array
+     * @param wordList Array of {@link Word} to add to
      * @param words String array with words to add
      * @param isNewSentence True if given string is the start of a sentence, false otherwise
      * @param isNewParagraph True if given string is the start of a paragraph, false otherwise
      */
-    private static void addWord(ArrayList<SpritzerWord> wordList, String[] words, boolean isNewSentence, boolean isNewParagraph)
+    private static void addWord(ArrayList<Word> wordList, String[] words, boolean isNewSentence, boolean isNewParagraph)
     {
         addWord(wordList, words[0], true, isNewSentence, isNewParagraph);
         for (int i = 1; i < words.length; i++ )
@@ -153,18 +152,18 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     }
 
     /**
-     * Generates a {@link SpritzerWord} from given string
-     * @param wordList Array of {@link SpritzerWord} to add to
+     * Generates a {@link Word} from given string
+     * @param wordList Array of {@link Word} to add to
      * @param word String to add
      * @param isNewWord True if given string is the start of a word, false otherwise
      * @param isNewSentence True if given string is the start of a sentence, false otherwise
      * @param isNewParagraph True if given string is the start of a paragraph, false otherwise
      */
-    private static void addWord(ArrayList<SpritzerWord> wordList, String word, boolean isNewWord, boolean isNewSentence, boolean isNewParagraph)
+    private static void addWord(ArrayList<Word> wordList, String word, boolean isNewWord, boolean isNewSentence, boolean isNewParagraph)
     {
         if ( word != null && !word.isEmpty() )
         {
-            wordList.add(new SpritzerWord(word, isNewWord, isNewSentence, isNewParagraph));
+            wordList.add(new Word(word, isNewWord, isNewSentence, isNewParagraph));
         }
     }
 
@@ -328,21 +327,21 @@ public abstract class SpritzerMedia implements ISpritzerMedia
     }
 
     @Override
-    public SpritzerWord next()
+    public Word next()
     {
-        SpritzerWord spritzerWord = this.content.get(this.index++);
-        if ( spritzerWord.isNewWord() )
+        Word word = this.content.get(this.index++);
+        if ( word.isNewWord() )
         {
             this.wordIndex++;
-            if ( spritzerWord.isNewSentence() )
+            if ( word.isNewSentence() )
             {
                 this.sentenceIndex++;
-                if ( spritzerWord.isNewParagraph() )
+                if ( word.isNewParagraph() )
                 {
                     this.paragraphIndex++;
                 }
             }
         }
-        return spritzerWord;
+        return word;
     }
 }

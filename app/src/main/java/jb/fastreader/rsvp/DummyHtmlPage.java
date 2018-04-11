@@ -1,10 +1,10 @@
-package jb.fastreader.spritz;
+package jb.fastreader.rsvp;
 
 /**
  * Created by Junaid Begawala on 2/25/18.
  */
 
-public class DummyHtmlPage extends SpritzerMedia
+public class DummyHtmlPage extends Media
 {
     public DummyHtmlPage()
     {

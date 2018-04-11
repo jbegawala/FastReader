@@ -8,7 +8,7 @@ import android.preference.PreferenceManager;
 /**
  * Created by Junaid Begawala on 4/4/18.
  */
-public class Preferences
+public class Settings
 {
     public static int getFastWpm(Context context)
     {
