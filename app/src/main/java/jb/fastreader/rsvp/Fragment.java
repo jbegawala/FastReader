@@ -149,6 +149,7 @@ public class Fragment extends android.app.Fragment
             if ( media != null )
             {
                 this.core.setMedia(media);
+                this.pause();
             }
         }
 
@@ -242,10 +243,12 @@ public class Fragment extends android.app.Fragment
         this.textView.setVisibility(View.INVISIBLE);
         this.showNavButtons();
         this.showActionBar();
+        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
     private void play()
     {
+        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
         this.hideMetaInfo();
         this.textView.setVisibility(View.VISIBLE);
         this.hideNavButtons();

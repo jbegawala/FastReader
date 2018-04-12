@@ -45,8 +45,7 @@
         android:keepScreenOn="true"
         android:textSize="30sp"
         android:typeface="monospace"
-        android:visibility="visible"
-        tools:text="hello" />
+        android:visibility="visible" />
 
     <ProgressBar
         android:id="@+id/loadingIcon"
@@ -140,10 +139,10 @@
         android:id="@+id/speedSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/statusVisual"
-        android:layout_alignParentEnd="true"
         android:checked="true"
         android:textOff="@string/toggle_speed_slow"
-        android:textOn="@string/toggle_speed_fast" />
+        android:textOn="@string/toggle_speed_fast"
+        android:layout_above="@+id/statusVisual"
+        android:layout_alignEnd="@+id/statusVisual" />
 
 </RelativeLayout>

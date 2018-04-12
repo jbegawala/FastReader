@@ -48,15 +48,15 @@ public class Fragment extends ListFragment
     {
         super.onListItemClick(l, v, position, id);
 
-        jb.fastreader.rsvp.Fragment fragment = (jb.fastreader.rsvp.Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT);
-        if ( fragment == null )
+        jb.fastreader.rsvp.Fragment rsvpFragment = (jb.fastreader.rsvp.Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT);
+        if ( rsvpFragment == null )
         {
-            fragment = new jb.fastreader.rsvp.Fragment();
+            rsvpFragment = new jb.fastreader.rsvp.Fragment();
         }
         Bundle bundle = new Bundle();
         bundle.putSerializable("media", this.items.get(position).media);
-        fragment.setArguments(bundle);
-        getFragmentManager().beginTransaction().replace(R.id.activity, fragment, RSVP_FRAGMENT).addToBackStack(null).commit();
+        rsvpFragment.setArguments(bundle);
+        getFragmentManager().beginTransaction().replace(R.id.activity, rsvpFragment, RSVP_FRAGMENT).addToBackStack(null).commit();
     }
 
     private void scanAndLoadMedia()

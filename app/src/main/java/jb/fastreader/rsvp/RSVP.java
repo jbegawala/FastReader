@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.widget.Toast;
 
@@ -20,7 +19,7 @@ import jb.fastreader.R;
 import jb.fastreader.SettingsFragment;
 
 // This is the activity that gets called when you share to this app
-public class RSVP extends FragmentActivity implements View.OnSystemUiVisibilityChangeListener
+public class RSVP extends FragmentActivity
 {
     public static final String TAG = RSVP.class.getSimpleName();
     public static final String RSVP_FRAGMENT = "RSVP_FRAGMENT";
@@ -34,15 +33,13 @@ public class RSVP extends FragmentActivity implements View.OnSystemUiVisibilityC
 
         super.onCreate(savedInstanceState);
         this.setupActionBar();
-        setContentView(R.layout.rsvp);
+        setContentView(R.layout.main);
 
-        getFragmentManager().beginTransaction().replace(R.id.container, new Fragment(), RSVP_FRAGMENT).commit();
+        getFragmentManager().beginTransaction().replace(R.id.activity, new Fragment(), RSVP_FRAGMENT).commit();
 
         FastReader frApp = (FastReader) getApplication();
         this.bus = frApp.getBus();
         this.bus.register(this);
-
-        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
     }
 
     private void applyThemeFromConfiguration()
@@ -63,7 +60,6 @@ public class RSVP extends FragmentActivity implements View.OnSystemUiVisibilityC
     public void onResume()
     {
         super.onResume();
-        this.dimSystemUi(true);
 
         Intent intent = getIntent();
         if ( this.isIntentMarkedAsHandled(intent) )
@@ -107,20 +103,6 @@ public class RSVP extends FragmentActivity implements View.OnSystemUiVisibilityC
         }
 
         this.markIntentAsHandled(intent);
-    }
-
-    private void dimSystemUi(boolean doDim)
-    {
-        final View decorView = getWindow().getDecorView();
-        if (doDim)
-        {
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-        }
-        else
-        {
-            decorView.setSystemUiVisibility(0);
-            decorView.setOnSystemUiVisibilityChangeListener(null);
-        }
     }
 
     private void markIntentAsHandled(Intent intent)
@@ -173,17 +155,4 @@ public class RSVP extends FragmentActivity implements View.OnSystemUiVisibilityC
     {
         return ((Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT));
     }
-
-    @Override
-    // called when the status bar changes visibility because of a call to setSystemUiVisibility(int).
-    public void onSystemUiVisibilityChange(int visibility)
-    {
-        // Stay in low-profile mode
-        if ((visibility & View.SYSTEM_UI_FLAG_LOW_PROFILE) == 0)
-        {
-            this.dimSystemUi(true);
-        }
-    }
-
-
 }
