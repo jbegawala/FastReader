@@ -4,26 +4,39 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
     <ImageView
         android:id="@+id/imageRestart"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:maxWidth="60dp"
-        android:minHeight="60dp"
-        android:minWidth="60dp"
+        android:layout_above="@+id/progressBar"
+        android:maxWidth="30dp"
+        android:minHeight="30dp"
+        android:minWidth="30dp"
         android:scaleType="center"
         android:src="@android:drawable/ic_menu_revert" />
 
+    <ImageView
+        android:id="@+id/imageTrash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@+id/imageRestart"
+        android:layout_above="@+id/progressBar"
+        android:adjustViewBounds="true"
+        android:maxHeight="30dp"
+        android:maxWidth="30dp"
+        android:minHeight="30dp"
+        android:minWidth="30dp"
+        android:src="@drawable/trash_dark_theme" />
+
     <TextView
         android:id="@+id/itemTitle"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="5dip"
-        android:layout_toStartOf="@+id/imageRestart"
+        android:layout_toStartOf="@+id/imageTrash"
+        android:layout_marginStart="@dimen/inner_margin"
         android:textSize="18sp" />
 
     <TextView
@@ -31,11 +44,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/inner_margin"
         android:layout_below="@+id/itemTitle"
-        android:layout_marginLeft="5dip"
-        android:layout_toStartOf="@+id/imageRestart"
         android:maxLines="1"
         android:textSize="12sp" />
+
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -47,4 +60,5 @@
         android:layout_marginBottom="-6dp"
         android:max="100"
         android:maxHeight="2dip" />
+
 </RelativeLayout>

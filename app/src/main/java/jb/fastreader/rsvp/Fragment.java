@@ -213,18 +213,6 @@ public class Fragment extends android.app.Fragment
         }
     }
 
-    void userTap()
-    {
-        if (this.core.isPlaying())
-        {
-            this.pause();
-        }
-        else
-        {
-            this.play();
-        }
-    }
-
     private void init()
     {
         this.updateMetaInfo();

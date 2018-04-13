@@ -2,6 +2,8 @@ package jb.fastreader.library;
 
 import android.support.annotation.NonNull;
 
+import java.io.File;
+
 import jb.fastreader.rsvp.IRSVPMedia;
 
 /**
@@ -11,10 +13,12 @@ import jb.fastreader.rsvp.IRSVPMedia;
 class Item implements Comparable<Item>
 {
     IRSVPMedia media;
+    File filePath;
 
-    Item(@NonNull IRSVPMedia media)
+    Item(@NonNull IRSVPMedia media, @NonNull File filePath)
     {
         this.media = media;
+        this.filePath = filePath;
     }
 
     int getProgress()
@@ -22,6 +26,10 @@ class Item implements Comparable<Item>
         return this.media.getWordIndex() * 100 / this.media.getWordCount();
     }
 
+    File getFilePath()
+    {
+        return filePath;
+    }
     @Override
     public int compareTo(@NonNull Item another)
     {

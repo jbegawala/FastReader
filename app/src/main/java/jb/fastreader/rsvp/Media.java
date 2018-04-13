@@ -298,6 +298,15 @@ public abstract class Media implements IRSVPMedia
     }
 
     @Override
+    public void restart()
+    {
+        this.index = 0;
+        this.wordIndex = 0;
+        this.sentenceIndex = 0;
+        this.paragraphIndex = 0;
+    }
+
+    @Override
     public String getTitle()
     {
         return this.title;

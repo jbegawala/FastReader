@@ -197,7 +197,7 @@ public class Core
 
     public void saveState()
     {
-        // TODO: Save State with Media
+        this.saveParsedContent();
     }
 
     private void saveParsedContent()

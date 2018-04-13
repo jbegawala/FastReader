@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,7 +45,7 @@ class Adapter extends ArrayAdapter<Item>
             convertView = LayoutInflater.from(this.context).inflate(id, null);
         }
 
-        Item item = this.items.get(position);
+        final Item item = this.items.get(position);
         if ( item != null )
         {
             TextView title = (TextView) convertView.findViewById(R.id.itemTitle);
@@ -67,15 +68,45 @@ class Adapter extends ArrayAdapter<Item>
                 }
                 subtitle.setText(host);
             }
-            ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
+
+            final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
             if ( progressBar != null )
             {
                 progressBar.setProgress(item.getProgress());
             }
-            ImageView reload = (ImageView) convertView.findViewById(R.id.imageRestart);
-            if ( reload != null )
+
+            ImageView reloadIcon = (ImageView) convertView.findViewById(R.id.imageRestart);
+            if ( reloadIcon != null )
             {
-                // set touch listener for reload
+                reloadIcon.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        item.media.restart();
+                        progressBar.setProgress(0);
+                    }
+                });
+            }
+
+            ImageView deleteIcon = (ImageView) convertView.findViewById(R.id.imageTrash);
+            if ( deleteIcon !=null )
+            {
+                deleteIcon.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        if ( item.getFilePath().delete() )
+                        {
+                            Adapter.super.remove(item);
+                        }
+                        else
+                        {
+                            Toast.makeText(getContext(), "Failed to delete", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
         }
 

@@ -78,7 +78,7 @@ public class Fragment extends ListFragment
 
                 if ( media != null )
                 {
-                    libraryContents.add(new Item(media));
+                    libraryContents.add(new Item(media, article));
                 }
             }
             catch (IOException |ClassNotFoundException e) {}
