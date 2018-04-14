@@ -1,11 +1,11 @@
 package jb.fastreader.rsvp;
 
-import android.app.ActionBar;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Activity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -31,7 +31,7 @@ import android.widget.Toast;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class Fragment extends android.app.Fragment
+public class Fragment extends android.support.v4.app.Fragment
 {
     private static final String TAG = Fragment.class.getSimpleName();
 
@@ -292,26 +292,18 @@ public class Fragment extends android.app.Fragment
 
     private void hideActionBar()
     {
-        Activity activity = getActivity();
-        if ( activity != null )
+        ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if ( bar != null)
         {
-            ActionBar bar = getActivity().getActionBar();
-            if ( bar != null)
-            {
-                bar.hide();
-            }
+            bar.hide();
         }
     }
     private void showActionBar()
     {
-        Activity activity = getActivity();
-        if ( activity != null )
+        ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if ( bar != null)
         {
-            ActionBar bar = activity.getActionBar();
-            if ( bar != null)
-            {
-                bar.show();
-            }
+            bar.show();
         }
     }
 
@@ -348,7 +340,7 @@ public class Fragment extends android.app.Fragment
             String status = String.format("%d of %d words (%d%%)", currentWord, wordCount, progress);
 
             Spannable spanRange = new SpannableString(status);
-            TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.MinutesToGo);
+            TextAppearanceSpan tas = new TextAppearanceSpan(statusText.getContext(), R.style.StatusText);
             spanRange.setSpan(tas, 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             this.statusText.setText(spanRange);
             this.statusVisual.setMax(100);

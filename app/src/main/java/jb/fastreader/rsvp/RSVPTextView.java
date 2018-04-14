@@ -1,6 +1,6 @@
 package jb.fastreader.rsvp;
 
-import android.app.Activity;
+import android.support.v4.app.FragmentActivity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -34,7 +34,7 @@ public class RSVPTextView extends AppCompatTextView
     private Path topPivotPath;
     private Path bottomPivotPath;
 
-    private Activity activity;
+    private FragmentActivity activity;
     private IRSVPMedia content = null;
     private boolean isPlaying;
     private boolean isPlayingRequest;
@@ -114,7 +114,7 @@ public class RSVPTextView extends AppCompatTextView
         this.bus = bus;
     }
 
-    void setActivity(Activity activity)
+    void setActivity(FragmentActivity activity)
     {
         this.activity = activity;
     }

@@ -1,11 +1,10 @@
 package jb.fastreader.rsvp;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +18,7 @@ import jb.fastreader.R;
 import jb.fastreader.SettingsFragment;
 
 // This is the activity that gets called when you share to this app
-public class RSVP extends FragmentActivity
+public class RSVP extends AppCompatActivity
 {
     public static final String TAG = RSVP.class.getSimpleName();
     public static final String RSVP_FRAGMENT = "RSVP_FRAGMENT";
@@ -35,7 +34,7 @@ public class RSVP extends FragmentActivity
         this.setupActionBar();
         setContentView(R.layout.main);
 
-        getFragmentManager().beginTransaction().replace(R.id.activity, new Fragment(), RSVP_FRAGMENT).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.activity, new Fragment(), RSVP_FRAGMENT).commit();
 
         FastReader frApp = (FastReader) getApplication();
         this.bus = frApp.getBus();
@@ -50,7 +49,7 @@ public class RSVP extends FragmentActivity
     private void setupActionBar()
     {
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setTitle(R.string.app_name);
         actionBar.setDisplayShowTitleEnabled(true);
@@ -141,10 +140,7 @@ public class RSVP extends FragmentActivity
         int id = item.getItemId();
         if (id == R.id.action_config)
         {
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, SettingsFragment.newInstance(), "config");
-            ft.addToBackStack(null);
-            ft.commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, new SettingsFragment(), "config").addToBackStack(null).commit();
             return true;
         }
 
@@ -153,6 +149,6 @@ public class RSVP extends FragmentActivity
 
     private Fragment getFragment()
     {
-        return ((Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT));
+        return ((Fragment) getSupportFragmentManager().findFragmentByTag(RSVP_FRAGMENT));
     }
 }
