@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import jb.fastreader.FastReader;
 import jb.fastreader.R;
 import jb.fastreader.rsvp.IRSVPMedia;
 
@@ -33,7 +34,11 @@ public class Fragment extends ListFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.library_fragment, container, false);
+        final View root = inflater.inflate(R.layout.library_fragment, container, false);
+
+        FastReader.setAndGetToolbar(root, this);
+
+        return root;
     }
 
     @Override

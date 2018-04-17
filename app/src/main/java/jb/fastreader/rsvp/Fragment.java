@@ -1,7 +1,5 @@
 package jb.fastreader.rsvp;
 
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -167,10 +165,6 @@ public class Fragment extends android.support.v4.app.Fragment
             this.updateMetaInfo();
             this.showMetaInfo();
         }
-        else
-        {
-            this.hideActionBar();
-        }
     }
 
     public void openURI(Uri mediaUri)
@@ -220,7 +214,6 @@ public class Fragment extends android.support.v4.app.Fragment
         this.textView.setVisibility(View.INVISIBLE);
         this.loadingIcon.setVisibility(View.VISIBLE);
         this.hideNavButtons();
-        this.showActionBar();
     }
 
     private void pause()
@@ -230,7 +223,6 @@ public class Fragment extends android.support.v4.app.Fragment
         this.showMetaInfo();
         this.textView.setVisibility(View.INVISIBLE);
         this.showNavButtons();
-        this.showActionBar();
         getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
@@ -240,7 +232,6 @@ public class Fragment extends android.support.v4.app.Fragment
         this.hideMetaInfo();
         this.textView.setVisibility(View.VISIBLE);
         this.hideNavButtons();
-        this.hideActionBar();
         this.core.start();
     }
 
@@ -266,7 +257,6 @@ public class Fragment extends android.support.v4.app.Fragment
         this.showMetaInfo();
         this.textView.setVisibility(View.INVISIBLE);
         this.hideNavButtons();
-        this.showActionBar();
     }
 
     private void hideMetaInfo()
@@ -288,23 +278,6 @@ public class Fragment extends android.support.v4.app.Fragment
         this.statusText.setVisibility(View.VISIBLE);
         this.statusVisual.setVisibility(View.VISIBLE);
         this.speedQuickToggle.setVisibility(View.VISIBLE);
-    }
-
-    private void hideActionBar()
-    {
-        ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if ( bar != null)
-        {
-            bar.hide();
-        }
-    }
-    private void showActionBar()
-    {
-        ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if ( bar != null)
-        {
-            bar.show();
-        }
     }
 
     public void updateMetaInfo()

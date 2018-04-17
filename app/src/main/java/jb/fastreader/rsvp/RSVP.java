@@ -1,6 +1,5 @@
 package jb.fastreader.rsvp;
 
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
@@ -8,7 +7,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.Toast;
 
 import com.squareup.otto.Bus;
@@ -31,7 +29,6 @@ public class RSVP extends AppCompatActivity
         Log.i(TAG, "Started onCreate");
 
         super.onCreate(savedInstanceState);
-        this.setupActionBar();
         setContentView(R.layout.main);
 
         getSupportFragmentManager().beginTransaction().replace(R.id.activity, new Fragment(), RSVP_FRAGMENT).commit();
@@ -44,15 +41,6 @@ public class RSVP extends AppCompatActivity
     private void applyThemeFromConfiguration()
     {
         setTheme(R.style.Dark);
-    }
-
-    private void setupActionBar()
-    {
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowHomeEnabled(true);
-        actionBar.setTitle(R.string.app_name);
-        actionBar.setDisplayShowTitleEnabled(true);
     }
 
     @Override

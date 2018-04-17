@@ -16,8 +16,7 @@
         android:ellipsize="marquee"
         android:textSize="24sp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="0dp" />
+        android:layout_alignParentStart="true"/>
 
     <TextView
         android:id="@+id/contentSubtitle"
@@ -37,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/contentSubtitle"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="200dp"
         android:clickable="true"
         android:focusableInTouchMode="true"
         android:gravity="start"
@@ -67,7 +66,7 @@
         android:minHeight="80dp"
         android:minWidth="80dp"
         android:src="@drawable/left3"
-        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
         android:layout_alignTop="@+id/RSVPTextView"
         android:layout_alignStart="@+id/contentTitle" />
 
@@ -129,7 +128,7 @@
         android:layout_above="@id/statusVisual"
         android:layout_alignParentStart="true"
         android:layout_marginBottom="@dimen/inner_margin"
-        android:layout_marginLeft="@dimen/inner_margin"
+        android:layout_marginStart="@dimen/inner_margin"
         android:clickable="true"
         android:textColor="@color/chapter_text_color"
         android:textSize="22sp" />
@@ -138,10 +137,11 @@
         android:id="@+id/speedSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:checked="true"
-        android:textOff="@string/toggle_speed_slow"
-        android:textOn="@string/toggle_speed_fast"
         android:layout_above="@+id/statusVisual"
-        android:layout_alignEnd="@+id/statusVisual" />
+        android:layout_alignEnd="@+id/statusVisual"
+        android:checked="true"
+        android:showText="true"
+        android:textOff="@string/toggle_speed_slow"
+        android:textOn="@string/toggle_speed_fast" />
 
 </RelativeLayout>
