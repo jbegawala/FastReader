@@ -1,9 +1,11 @@
 package jb.fastreader.library;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,14 +99,32 @@ class Adapter extends ArrayAdapter<Item>
                     @Override
                     public void onClick(View v)
                     {
-                        if ( item.getFilePath().delete() )
+                        AlertDialog.Builder deleteAlert = new AlertDialog.Builder(getContext(), R.style.dialogThemeDark);
+                        deleteAlert.setMessage(R.string.confirm_article_delete);
+                        deleteAlert.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
                         {
-                            Adapter.super.remove(item);
-                        }
-                        else
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                if ( item.getFilePath().delete() )
+                                {
+                                    Adapter.super.remove(item);
+                                }
+                                else
+                                {
+                                    Toast.makeText(getContext(), getContext().getString(R.string.failed_article_delete), Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+                        deleteAlert.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
                         {
-                            Toast.makeText(getContext(), "Failed to delete", Toast.LENGTH_LONG).show();
-                        }
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                dialog.cancel();
+                            }
+                        });
+                        deleteAlert.show();
                     }
                 });
             }

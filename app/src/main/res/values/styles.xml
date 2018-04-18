@@ -22,6 +22,11 @@
 
     </style>
 
+    <style name="dialogThemeDark" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:textColorPrimary">?attr/text_color</item>
+        <item name="android:textColorSecondary">?attr/text_color</item>
+        <item name="android:background">@color/ultra_subdued_text_dark</item>
+    </style>
 
     <style name="settingsThemeDark">
         <item name="android:textColorPrimary">?attr/text_color</item>
