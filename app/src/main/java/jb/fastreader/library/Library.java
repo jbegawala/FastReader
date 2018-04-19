@@ -3,7 +3,6 @@ package jb.fastreader.library;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 
 import jb.fastreader.R;
@@ -15,6 +14,7 @@ import jb.fastreader.R;
 public class Library extends AppCompatActivity
 {
     public static final String ARTICLE_DIRECTORY = "articles";
+    public static final String LIBRARY_FRAGMENT = "LIBRARY_FRAGMENT";
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)

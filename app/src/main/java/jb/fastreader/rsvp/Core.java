@@ -28,7 +28,8 @@ public class Core
     public enum BusEvent
     {
         CONTENT_PARSED,
-        CONTENT_FINISHED
+        CONTENT_FINISHED,
+        WEBSERVICE_FAIL
     }
 
     public enum MediaParseStatus
@@ -188,8 +189,11 @@ public class Core
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, String res, Throwable t) {
+            public void onFailure(int statusCode, Header[] headers, String res, Throwable t)
+            {
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+                bus.post(BusEvent.WEBSERVICE_FAIL);
+                Toast.makeText(Core.this.context, Core.this.context.getString(R.string.failed_webservice) + ": " + statusCode, Toast.LENGTH_LONG).show();
                 Log.i("Webservice fail", res);
             }
         });
@@ -197,7 +201,10 @@ public class Core
 
     public void saveState()
     {
-        this.saveParsedContent();
+        if ( this.media != null)
+        {
+            this.saveParsedContent();
+        }
     }
 
     private void saveParsedContent()

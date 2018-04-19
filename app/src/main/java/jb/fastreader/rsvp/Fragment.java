@@ -29,6 +29,8 @@ import android.widget.Toast;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static jb.fastreader.library.Library.LIBRARY_FRAGMENT;
+
 public class Fragment extends android.support.v4.app.Fragment
 {
     private static final String TAG = Fragment.class.getSimpleName();
@@ -198,10 +200,29 @@ public class Fragment extends android.support.v4.app.Fragment
         }
         else if (event == Core.BusEvent.CONTENT_FINISHED)
         {
-            getActivity().runOnUiThread(new Runnable() {
+            getActivity().runOnUiThread(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     Fragment.this.endOfArticle();
+                }
+            });
+        }
+        else if (event == Core.BusEvent.WEBSERVICE_FAIL)
+        {
+            // Go back to library
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    jb.fastreader.library.Fragment libraryFragment = (jb.fastreader.library.Fragment) getFragmentManager().findFragmentByTag(LIBRARY_FRAGMENT);
+                    if ( libraryFragment == null )
+                    {
+                        libraryFragment = new jb.fastreader.library.Fragment();
+                    }
+                    getFragmentManager().beginTransaction().replace(R.id.activity, libraryFragment, LIBRARY_FRAGMENT).commit();
                 }
             });
         }
@@ -255,6 +276,7 @@ public class Fragment extends android.support.v4.app.Fragment
     {
         this.updateMetaInfo();
         this.showMetaInfo();
+        this.loadingIcon.setVisibility(View.INVISIBLE);
         this.textView.setVisibility(View.INVISIBLE);
         this.hideNavButtons();
     }
