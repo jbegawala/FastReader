@@ -30,4 +30,11 @@ public class Settings
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPreferences.getBoolean(resources.getString(R.string.config_dev_source_key), true);
     }
+
+    public static boolean useWebService(Context context)
+    {
+        Resources resources = context.getResources();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPreferences.getBoolean(resources.getString(R.string.config_extraction_usewebservice_key), false);
+    }
 }

@@ -21,13 +21,22 @@
             android:summary="@string/config_wpm_slow_desc"
             android:title="@string/config_wpm_slow" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/config_cat_extraction">
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/config_extraction_usewebservice_key"
+        android:summary="@string/config_extraction_usewebservice_desc"
+        android:title="@string/config_extraction_usewebservice" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/config_cat_dev">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/config_dev_source_key"
+            android:summary="@string/config_dev_source_desc"
+            android:title="@string/config_dev_source" />
 
     </PreferenceCategory>
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="@string/config_dev_source_key"
-        android:summary="@string/config_dev_source_desc"
-        android:title="@string/config_dev_source" />
 
 </PreferenceScreen>

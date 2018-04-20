@@ -195,8 +195,15 @@ public class Fragment extends android.support.v4.app.Fragment
         Log.i(TAG, "ProcessBusEvent: " + event.name());
         if (event == Core.BusEvent.CONTENT_PARSED)
         {
-            this.loadingIcon.setVisibility(View.INVISIBLE);
-            this.pause();
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Fragment.this.loadingIcon.setVisibility(View.INVISIBLE);
+                    Fragment.this.pause();
+                }
+            });
         }
         else if (event == Core.BusEvent.CONTENT_FINISHED)
         {

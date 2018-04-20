@@ -2,6 +2,7 @@ package jb.fastreader.rsvp;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,9 +17,11 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.net.URL;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
+import com.kohlschutter.boilerpipe.extractors.ArticleExtractor;
 import jb.fastreader.Settings;
 import jb.fastreader.R;
 import jb.fastreader.library.Library;
@@ -62,6 +65,49 @@ public class Core
         this.mediaParseStatus = MediaParseStatus.NOT_STARTED;
     }
 
+    private class Extractor extends AsyncTask<Uri, Integer, HtmlPage>
+    {
+        Core core;
+        Bus bus;
+
+        protected void init(Core core, Bus bus)
+        {
+            this.core = core;
+            this.bus = bus;
+        }
+
+        @Override
+        protected HtmlPage doInBackground(Uri... uris)
+        {
+            HtmlPage page = null;
+            try
+            {
+                for ( Uri uri : uris )
+                {
+                    URL url = new URL(uri.toString());
+                    ArticleExtractor extractor = new ArticleExtractor();
+                    String content = extractor.getText(url);
+                    String title = extractor.getTitle();
+                    page = new HtmlPage(title, uri.toString(), content);
+                    this.core.setMedia(page);
+
+                    synchronized ( this.core.mediaStatusSync )
+                    {
+                        this.core.mediaParseStatus = MediaParseStatus.COMPLETE;
+                    }
+                    this.bus.post(BusEvent.CONTENT_PARSED);
+                    this.core.saveParsedContent();
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            return page;
+        }
+    }
+
     public void openMedia(Uri uri)
     {
         this.pause();
@@ -84,7 +130,16 @@ public class Core
             }
             else
             {
-                this.sendToBoilerPipe(uri);
+                if ( Settings.useWebService(this.textView.getContext()) )
+                {
+                    this.sendToBoilerPipe(uri);
+                }
+                else
+                {
+                    Extractor extractor = new Extractor();
+                    extractor.init(this, this.bus);
+                    extractor.execute(uri);
+                }
             }
         }
         else

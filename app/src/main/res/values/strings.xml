@@ -29,8 +29,12 @@
     <string name="config_wpm_slow_default">300</string>
     <string name="config_cat_dev">Development</string>
     <string name="config_dev_source">Use dummy article</string>
-    <string name="config_dev_source_desc">Check this option to use dummy article content instead of using a webservice</string>
+    <string name="config_dev_source_desc">Check this option to use dummy article content instead of using the webservice or built in extractor</string>
     <string name="config_dev_source_key">config_dev_source</string>
+    <string name="config_cat_extraction">Content Extraction</string>
+    <string name="config_extraction_usewebservice">Use boilerpipe webservice?</string>
+    <string name="config_extraction_usewebservice_desc">This is a free public webservice and may exceed quota</string>
+    <string name="config_extraction_usewebservice_key">config_extraction_usewebservice</string>
     <string name="error_could_not_parse_uri">Could not parse URI: </string>
     <string name="error_unsupported_uri">Unsupported URI: </string>
     <string name="error_could_not_load_media">Could not load media</string>
