@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="config_wpm_fast">500</integer>
+    <integer name="config_wpm_fast_default">750</integer>
+    <integer name="config_wpm_slow">500</integer>
+    <integer name="config_wpm_slow_default">300</integer>
+    <integer name="config_wpm_max">1000</integer>
+    <integer name="config_wpm_min">10</integer>
+    <integer name="config_wpm_increment">10</integer>
+</resources>
