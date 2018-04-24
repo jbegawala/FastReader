@@ -6,6 +6,7 @@
     <string name="confirm_article_delete">Delete article?</string>
     <string name="failed_article_delete">Failed to delete article</string>
     <string name="failed_webservice">Webservice failed</string>
+    <string name="failed_article_save">Failed to save article</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="title_activity_config">Configuration</string>

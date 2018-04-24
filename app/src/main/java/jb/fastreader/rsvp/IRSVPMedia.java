@@ -7,7 +7,6 @@ import java.io.Serializable;
  */
 public interface IRSVPMedia extends Serializable
 {
-
     String getTitle();
 
     String getUri();
@@ -23,6 +22,8 @@ public interface IRSVPMedia extends Serializable
     void rewindCurrentParagraph();
 
     void restart();
+
+    void saveState();
 
     boolean hasNext();
 

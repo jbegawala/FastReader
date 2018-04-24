@@ -1,7 +1,16 @@
 package jb.fastreader.rsvp;
 
+import android.support.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import jb.fastreader.library.DatabaseHelper;
 
 /**
  * Created by Junaid Begawala on 3/27/18.
@@ -15,6 +24,7 @@ public abstract class Media implements IRSVPMedia
     private static int WORD = 0;
     private static int SENTENCE = 1;
     private static int PARAGRAPH = 2;
+    private long ID;
     private String title;
     private String uri;
     private ArrayList<Word> content;
@@ -31,17 +41,46 @@ public abstract class Media implements IRSVPMedia
     private Integer[][] mapFromIndex;
 
     /**
-     * Creates media object
+     * Parses given text to generate structured media file and saves to disk
      * @param title Title of content
      * @param uri Uri of content
      * @param text A string without any markup or formatting
      */
-    public Media(String title, String uri, String text)
+    Media(@NonNull String title,@NonNull String uri,@NonNull String text) throws FailedToSave
     {
         this.title = title;
         this.uri = uri;
+
+        // Process media
         this.processText(text);
         this.indexContent();
+
+        // Save media
+        String fileName = UUID.nameUUIDFromBytes(uri.getBytes()).toString();
+        long result = DatabaseHelper.getInstance(null).addArticle(fileName, title, uri, this.getWordIndex(), this.getWordCount());
+        if ( result == -2 )
+        {
+            return;  // article already exists in database
+        }
+        if ( result == -1 )
+        {
+            throw new FailedToSave("Failed to insert article into sql database");
+        }
+
+        this.ID = result;
+        try
+        {
+            File file = new File(DatabaseHelper.getInstance(null).getArticleDirectory(), fileName);
+            FileOutputStream fos = new FileOutputStream(file, false);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(this);
+            oos.close();
+            fos.close();
+        }
+        catch (java.io.IOException e)
+        {
+            throw new FailedToSave(e.getMessage());
+        }
     }
 
     /**
@@ -256,6 +295,12 @@ public abstract class Media implements IRSVPMedia
     }
 
     @Override
+    public void saveState()
+    {
+        DatabaseHelper.getInstance(null).updateArticle(this.ID, this.wordIndex);
+    }
+
+    @Override
     public void rewindCurrentSentence()
     {
         // If user is on the first word of the sentence, jump to previous sentence. Useful if paused
@@ -352,5 +397,13 @@ public abstract class Media implements IRSVPMedia
             }
         }
         return word;
+    }
+}
+
+class FailedToSave extends IOException
+{
+    FailedToSave(String message)
+    {
+        super(message);
     }
 }

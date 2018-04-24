@@ -23,6 +23,7 @@ import com.squareup.otto.Subscribe;
 import jb.fastreader.Settings;
 import jb.fastreader.FastReader;
 import jb.fastreader.R;
+import jb.fastreader.library.DatabaseHelper;
 
 import android.widget.Toast;
 
@@ -58,6 +59,10 @@ public class Fragment extends android.support.v4.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.i(TAG, "onCreateView: start");
+
+        // Ensure instance available when media is created to avoid passing conext to Media.java
+        DatabaseHelper.getInstance(getContext());
+
         // Inflate the layout for this fragment
         final View root = inflater.inflate(R.layout.rsvp_fragment, container, false);
         this.contentTitle = ((TextView) root.findViewById(R.id.contentTitle));
@@ -216,7 +221,7 @@ public class Fragment extends android.support.v4.app.Fragment
                 }
             });
         }
-        else if (event == Core.BusEvent.WEBSERVICE_FAIL)
+        else if (event == Core.BusEvent.WEBSERVICE_FAIL || event == Core.BusEvent.ARTICLESAVE_FAIL)
         {
             // Go back to library
             getActivity().runOnUiThread(new Runnable()

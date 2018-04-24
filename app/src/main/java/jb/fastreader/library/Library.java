@@ -13,7 +13,6 @@ import jb.fastreader.R;
 
 public class Library extends AppCompatActivity
 {
-    public static final String ARTICLE_DIRECTORY = "articles";
     public static final String LIBRARY_FRAGMENT = "LIBRARY_FRAGMENT";
 
     @Override

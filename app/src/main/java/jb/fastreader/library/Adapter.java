@@ -30,7 +30,7 @@ class Adapter extends ArrayAdapter<Item>
     private int id;
     private List<Item> items;
 
-    Adapter(@NonNull Context context, @LayoutRes int resource, @NonNull List libraryItems)
+    Adapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<Item> libraryItems)
     {
         super(context, resource, libraryItems);
         this.context = context;
@@ -53,7 +53,7 @@ class Adapter extends ArrayAdapter<Item>
             TextView title = (TextView) convertView.findViewById(R.id.itemTitle);
             if ( title != null )
             {
-                title.setText(item.media.getTitle());
+                title.setText(item.getTitle());
             }
             TextView subtitle = (TextView) convertView.findViewById(R.id.itemSubTitle);
             if ( subtitle != null )
@@ -62,7 +62,7 @@ class Adapter extends ArrayAdapter<Item>
 
                 try
                 {
-                    host =  new URL(item.media.getUri()).getHost();
+                    host =  new URL(item.getUriString()).getHost();
                 }
                 catch (MalformedURLException e)
                 {
@@ -86,7 +86,10 @@ class Adapter extends ArrayAdapter<Item>
                     public void onClick(View v)
                     {
                         item.media.restart();
-                        progressBar.setProgress(0);
+                        if ( progressBar != null )
+                        {
+                            progressBar.setProgress(0);
+                        }
                     }
                 });
             }
@@ -106,7 +109,7 @@ class Adapter extends ArrayAdapter<Item>
                             @Override
                             public void onClick(DialogInterface dialog, int which)
                             {
-                                if ( item.getFilePath().delete() )
+                                if ( item.delete() )
                                 {
                                     Adapter.super.remove(item);
                                 }

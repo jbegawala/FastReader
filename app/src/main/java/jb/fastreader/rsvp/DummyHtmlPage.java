@@ -4,13 +4,21 @@ package jb.fastreader.rsvp;
  * Created by Junaid Begawala on 2/25/18.
  */
 
-public class DummyHtmlPage extends Media
+class DummyHtmlPage
 {
-    public DummyHtmlPage()
+    static String getTitle()
     {
-        super("IHOP is Giving Away Free Pancakes on Tuesday ",
-                "https://lifehacker.com/ihop-is-giving-away-free-pancakes-on-tuesday-1823250922",
-                "Tuesday is National Pancake Day. While on the surface maybe not a holiday worth remembering, this year IHOP is offering something you might want to pencil in on your calendar: free pancakes.\n" +
+        return "IHOP is Giving Away Free Pancakes on Tuesday ";
+    }
+
+    static String getUriString()
+    {
+        return "https://lifehacker.com/ihop-is-giving-away-free-pancakes-on-tuesday-1823250922";
+    }
+
+    static String getContent()
+    {
+        return  "Tuesday is National Pancake Day. While on the surface maybe not a holiday worth remembering, this year IHOP is offering something you might want to pencil in on your calendar: free pancakes.\n" +
                 "\n" +
                 "The International House of Pancakes is offering customers a free short stack of buttermilk pancakes between 7am and 7pm this Tuesday, February 27 at its locations in the United States, Canada, Puerto Rico, Guam, and Mexico.\n" +
                 "\n" +
@@ -18,6 +26,6 @@ public class DummyHtmlPage extends Media
                 "\n" +
                 "You also have to dine-in in order to take advantage of the deal.\n" +
                 "\n" +
-                "That said, free pancakes. Or, you could just whip some up at home. Here’s how to make some fluffy ones. ");
+                "That said, free pancakes. Or, you could just whip some up at home. Here’s how to make some fluffy ones. ";
     }
 }

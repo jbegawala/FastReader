@@ -14,28 +14,24 @@ import com.squareup.otto.Bus;
 
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.net.URL;
-import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
 import com.kohlschutter.boilerpipe.extractors.ArticleExtractor;
 import jb.fastreader.Settings;
 import jb.fastreader.R;
-import jb.fastreader.library.Library;
 
-public class Core
+class Core
 {
-    public enum BusEvent
+    enum BusEvent
     {
         CONTENT_PARSED,
         CONTENT_FINISHED,
-        WEBSERVICE_FAIL
+        WEBSERVICE_FAIL,
+        ARTICLESAVE_FAIL
     }
 
-    public enum MediaParseStatus
+    enum MediaParseStatus
     {
         NOT_STARTED,
         IN_PROGRESS,
@@ -53,7 +49,7 @@ public class Core
     private MediaParseStatus mediaParseStatus;
     private RSVPTextView textView;
 
-    public Core(Context context, Bus bus, TextView textView)
+    Core(Context context, Bus bus, TextView textView)
     {
         Log.v(TAG, "Constructor");
         this.context = context;
@@ -70,7 +66,7 @@ public class Core
         Core core;
         Bus bus;
 
-        protected void init(Core core, Bus bus)
+        void init(Core core, Bus bus)
         {
             this.core = core;
             this.bus = bus;
@@ -88,15 +84,7 @@ public class Core
                     ArticleExtractor extractor = new ArticleExtractor();
                     String content = extractor.getText(url);
                     String title = extractor.getTitle();
-                    page = new HtmlPage(title, uri.toString(), content);
-                    this.core.setMedia(page);
-
-                    synchronized ( this.core.mediaStatusSync )
-                    {
-                        this.core.mediaParseStatus = MediaParseStatus.COMPLETE;
-                    }
-                    this.bus.post(BusEvent.CONTENT_PARSED);
-                    this.core.saveParsedContent();
+                    page = Core.this.createMedia(title, uri.toString(), content);
                 }
             }
             catch (Exception e)
@@ -108,7 +96,7 @@ public class Core
         }
     }
 
-    public void openMedia(Uri uri)
+    void openMedia(Uri uri)
     {
         this.pause();
 
@@ -120,13 +108,7 @@ public class Core
             }
             if ( Settings.useDummyArticle(this.textView.getContext()) )
             {
-                this.setMedia(new DummyHtmlPage());
-                synchronized ( this.mediaStatusSync )
-                {
-                    this.mediaParseStatus = MediaParseStatus.COMPLETE;
-                }
-                this.bus.post(BusEvent.CONTENT_PARSED);
-                this.saveParsedContent();
+                this.createMedia(DummyHtmlPage.getTitle(), DummyHtmlPage.getUriString(), DummyHtmlPage.getContent());
             }
             else
             {
@@ -148,19 +130,50 @@ public class Core
         }
     }
 
-    public void setMedia(IRSVPMedia media)
+    private HtmlPage createMedia(String title, String uri, String content)
+    {
+        this.bus.post(BusEvent.CONTENT_PARSED);
+        HtmlPage media = null;
+        try
+        {
+             media = new HtmlPage(title, uri, content);
+
+            this.setMedia(media);
+
+            synchronized (mediaStatusSync)
+            {
+                mediaParseStatus = MediaParseStatus.COMPLETE;
+            }
+
+            this.bus.post(BusEvent.CONTENT_PARSED);
+        }
+        catch (FailedToSave failedToSave)
+        {
+            synchronized (mediaStatusSync)
+            {
+                mediaParseStatus = MediaParseStatus.NOT_STARTED;
+                Toast.makeText(Core.this.context, Core.this.context.getString(R.string.failed_article_save) + ": " + failedToSave.getMessage(), Toast.LENGTH_LONG).show();
+            }
+
+            this.bus.post(BusEvent.ARTICLESAVE_FAIL);
+        }
+
+        return media;
+    }
+
+    void setMedia(IRSVPMedia media)
     {
         this.media = media;
         this.textView.setContent(media);
     }
 
-    public void start()
+    void start()
     {
         Log.i(TAG, "start");
         this.textView.play();
     }
 
-    public void pause()
+    void pause()
     {
         if ( !this.textView.isPlaying() )
         {
@@ -186,12 +199,10 @@ public class Core
         }
     }
 
-    public boolean isPlaying()
+    boolean isPlaying()
     {
         return this.textView.isPlaying();
     }
-
-
 
     private void sendToBoilerPipe(Uri uri)
     {
@@ -232,15 +243,7 @@ public class Core
                     }
                 }
 
-                Core.this.setMedia(new HtmlPage(title, subtitle, content));
-
-                synchronized (mediaStatusSync)
-                {
-                    mediaParseStatus = MediaParseStatus.COMPLETE;
-                }
-
-                bus.post(BusEvent.CONTENT_PARSED);
-                saveParsedContent();
+                Core.this.createMedia(title, subtitle, content);
             }
 
             @Override
@@ -254,73 +257,54 @@ public class Core
         });
     }
 
-    public void saveState()
+    void saveState()
     {
         if ( this.media != null)
         {
-            this.saveParsedContent();
+            this.media.saveState();
         }
     }
 
-    private void saveParsedContent()
-    {
-        try
-        {
-            String fileName = UUID.nameUUIDFromBytes(this.media.getUri().getBytes()).toString();
-            File file = new File(this.context.getDir(Library.ARTICLE_DIRECTORY, Context.MODE_PRIVATE), fileName);
-            FileOutputStream fos = new FileOutputStream(file, false);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(this.media);
-            oos.close();
-            fos.close();
-        }
-        catch (java.io.IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-
-    public void setWpm(int wpm)
+    void setWpm(int wpm)
     {
         this.textView.setWpm(wpm);
     }
 
-
-    public IRSVPMedia getMedia() {
+    IRSVPMedia getMedia()
+    {
         return media;
     }
 
-    public MediaParseStatus getMediaParseStatus()
+    MediaParseStatus getMediaParseStatus()
     {
         return this.mediaParseStatus;
     }
 
-    public int getCurrentWordNumber()
+    int getCurrentWordNumber()
     {
         return this.media.getWordIndex();  // word index is a zero based index whose current value is the next word to display
     }
 
-    public int getWordCount()
+    int getWordCount()
     {
         return this.media.getWordCount();
     }
 
-    public boolean isMediaSelected() {
+    boolean isMediaSelected() {
         return media != null;
     }
 
-    public void rewindCurrentSentence()
+    void rewindCurrentSentence()
     {
         this.media.rewindCurrentSentence();
     }
 
-    public void rewindPreviousSentence()
+    void rewindPreviousSentence()
     {
         this.media.rewindPreviousSentence();
     }
 
-    public void rewindCurrentParagraph()
+    void rewindCurrentParagraph()
     {
         this.media.rewindCurrentParagraph();
     }
@@ -330,7 +314,7 @@ public class Core
         Toast.makeText(this.textView.getContext(), this.textView.getContext().getString(R.string.unsupported_file), Toast.LENGTH_LONG).show();
     }
 
-    public static boolean isUriSupported(Uri uri)
+    static boolean isUriSupported(Uri uri)
     {
         return ( uri != null && isHttpUri(uri) );
     }
