@@ -1,5 +1,6 @@
 package jb.fastreader.rsvp;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import jb.fastreader.Settings;
 import jb.fastreader.library.DatabaseHelper;
 
 /**
@@ -46,7 +48,7 @@ public abstract class Media implements IRSVPMedia
      * @param uri Uri of content
      * @param text A string without any markup or formatting
      */
-    Media(@NonNull String title,@NonNull String uri,@NonNull String text) throws FailedToSave
+    Media(@NonNull String title,@NonNull String uri,@NonNull String text, @NonNull Context context) throws FailedToSave
     {
         this.title = title;
         this.uri = uri;
@@ -57,7 +59,7 @@ public abstract class Media implements IRSVPMedia
 
         // Save media
         String fileName = UUID.nameUUIDFromBytes(uri.getBytes()).toString();
-        long result = DatabaseHelper.getInstance(null).addArticle(fileName, title, uri, this.getWordIndex(), this.getWordCount());
+        long result = DatabaseHelper.getInstance(context).addArticle(fileName, title, uri, this.getWordIndex(), this.getWordCount());
         if ( result == -2 )
         {
             return;  // article already exists in database
@@ -70,12 +72,20 @@ public abstract class Media implements IRSVPMedia
         this.ID = result;
         try
         {
-            File file = new File(DatabaseHelper.getInstance(null).getArticleDirectory(), fileName);
+            File file = new File(DatabaseHelper.getInstance(context).getArticleDirectory(), fileName);
             FileOutputStream fos = new FileOutputStream(file, false);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(this);
             oos.close();
             fos.close();
+
+            if ( Settings.saveRawExtract(context) )
+            {
+                File extractFile = new File(DatabaseHelper.getInstance(context).getExtractDirectory(), fileName + ".txt");
+                FileOutputStream extractFos = new FileOutputStream(extractFile, false);
+                extractFos.write(text.getBytes());
+                fos.close();
+            }
         }
         catch (java.io.IOException e)
         {

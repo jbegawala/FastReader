@@ -136,7 +136,7 @@ class Core
         HtmlPage media = null;
         try
         {
-             media = new HtmlPage(title, uri, content);
+             media = new HtmlPage(title, uri, content, this.context);
 
             this.setMedia(media);
 

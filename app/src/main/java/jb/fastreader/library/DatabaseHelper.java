@@ -21,6 +21,7 @@ import java.util.Locale;
 public class DatabaseHelper extends SQLiteOpenHelper
 {
     private static final String ARTICLE_DIRECTORY = "articles";
+    private static final String EXTRACT_DIRECTORY = "extracted";
     private static DatabaseHelper dbHelper = null;
     private Context context;
 
@@ -51,6 +52,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public File getArticleDirectory()
     {
         return this.context.getDir(ARTICLE_DIRECTORY, Context.MODE_PRIVATE);
+    }
+
+    public File getExtractDirectory()
+    {
+        return this.context.getDir(EXTRACT_DIRECTORY, Context.MODE_PRIVATE);
     }
 
     @Override

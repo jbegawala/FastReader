@@ -255,7 +255,7 @@ public class RSVPTextView extends AppCompatTextView
 
                                     catch (InterruptedException e)
                                     {
-                                        Log.e(TAG, "Exception while playing");
+                                        Log.e(TAG, getResources().getString(R.string.error_while_playing));
                                         e.printStackTrace();
                                     }
                                 }

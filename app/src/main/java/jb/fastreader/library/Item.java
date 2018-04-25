@@ -68,6 +68,11 @@ class Item implements Comparable<Item>
         {
             File filePath = new File(DatabaseHelper.getInstance(null).getArticleDirectory(), this.filename);
             filePath.delete();
+            File extractFilePath = new File(DatabaseHelper.getInstance(null).getExtractDirectory(), this.filename + ".txt");
+            if ( extractFilePath.exists() )
+            {
+                extractFilePath.delete();
+            }
             return true;
         }
         return false;

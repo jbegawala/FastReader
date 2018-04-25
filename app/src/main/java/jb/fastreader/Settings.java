@@ -35,4 +35,10 @@ public class Settings
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPreferences.getBoolean("config_extraction_usewebservice", false);
     }
+
+    public static boolean saveRawExtract(Context context)
+    {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPreferences.getBoolean("config_save_raw_extract", false);
+    }
 }

@@ -20,11 +20,14 @@
     <string name="config_cat_dev">Development</string>
     <string name="config_dev_source_title">Use dummy article</string>
     <string name="config_dev_source_desc">Check this option to use dummy article content instead of using the webservice or built in extractor</string>
+    <string name="config_save_raw_extract_title">Save extracted article content</string>
+    <string name="config_save_raw_extract_desc">Check this option to save the raw text returned by article extraction</string>
     <string name="config_cat_extraction">Content Extraction</string>
     <string name="config_extraction_usewebservice_title">Use boilerpipe webservice</string>
     <string name="config_extraction_usewebservice_desc">This is a free public webservice and may exceed quota</string>
     <string name="error_could_not_parse_uri">Could not parse URI: </string>
     <string name="error_unsupported_uri">Unsupported URI: </string>
     <string name="error_could_not_load_media">Could not load media</string>
+    <string name="error_while_playing">Exception encountered during playback</string>
     <string name="playButton_contentDescription">Press to begin playback</string>
 </resources>
