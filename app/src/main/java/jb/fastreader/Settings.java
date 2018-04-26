@@ -1,9 +1,12 @@
 package jb.fastreader;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 
 /**
  * Created by Junaid Begawala on 4/4/18.
@@ -38,6 +41,10 @@ public class Settings
 
     public static boolean saveRawExtract(Context context)
     {
+        if ( ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED )
+        {
+            return false;
+        }
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPreferences.getBoolean("config_save_raw_extract", false);
     }

@@ -4,38 +4,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <ImageView
-        android:id="@+id/imageRestart"
+        android:id="@+id/actionMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/progressBar"
         android:layout_alignParentEnd="true"
-        android:layout_above="@+id/progressBar"
-        android:maxWidth="30dp"
-        android:minHeight="30dp"
-        android:minWidth="30dp"
-        android:scaleType="center"
-        android:src="@android:drawable/ic_menu_revert" />
-
-    <ImageView
-        android:id="@+id/imageTrash"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toStartOf="@+id/imageRestart"
-        android:layout_above="@+id/progressBar"
+        android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
-        android:maxHeight="30dp"
+        android:maxHeight="60dp"
         android:maxWidth="30dp"
-        android:minHeight="30dp"
+        android:minHeight="60dp"
         android:minWidth="30dp"
-        android:src="@drawable/trash_dark_theme" />
+        android:scaleType="centerCrop"
+        android:src="@drawable/threedotwhite" />
 
     <TextView
         android:id="@+id/itemTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/imageTrash"
+        android:layout_toStartOf="@+id/actionMenu"
         android:layout_marginStart="@dimen/inner_margin"
         android:textSize="18sp" />
 

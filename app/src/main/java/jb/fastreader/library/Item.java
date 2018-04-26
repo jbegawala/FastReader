@@ -78,6 +78,11 @@ class Item implements Comparable<Item>
         return false;
     }
 
+    File getExtractFilePath()
+    {
+        return new File(DatabaseHelper.getInstance(null).getExtractDirectory(), this.filename + ".txt");
+    }
+
     @Override
     public int compareTo(@NonNull Item another)
     {

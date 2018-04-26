@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -13,6 +14,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+
+import jb.fastreader.R;
 
 /**
  * Created by Junaid Begawala on 4/23/18.
@@ -56,7 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     public File getExtractDirectory()
     {
-        return this.context.getDir(EXTRACT_DIRECTORY, Context.MODE_PRIVATE);
+        return new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + this.context.getResources().getString(R.string.app_name) + File.separator + EXTRACT_DIRECTORY);
     }
 
     @Override
@@ -81,7 +84,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         onCreate(db);
     }
 
-    public List<Item> loadArticles()
+    List<Item> loadArticles()
     {
         SQLiteDatabase db = this.getWritableDatabase();
         List<Item> libraryContents = new LinkedList<>();

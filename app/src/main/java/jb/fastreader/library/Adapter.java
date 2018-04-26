@@ -2,11 +2,17 @@ package jb.fastreader.library;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.PopupMenu;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -77,57 +83,72 @@ class Adapter extends ArrayAdapter<Item>
                 progressBar.setProgress(item.getProgress());
             }
 
-            ImageView reloadIcon = (ImageView) convertView.findViewById(R.id.imageRestart);
-            if ( reloadIcon != null )
+            ImageView actionMenu = (ImageView) convertView.findViewById(R.id.actionMenu);
+            if ( actionMenu != null )
             {
-                reloadIcon.setOnClickListener(new View.OnClickListener()
+                actionMenu.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
-                    public void onClick(View v)
+                    public void onClick(View view)
                     {
-                        item.media.restart();
-                        if ( progressBar != null )
+                        Context wrapper = new ContextThemeWrapper(getContext(), R.style.popupThemeDark);
+                        PopupMenu popup = new PopupMenu(wrapper, view);
+                        popup.getMenuInflater().inflate(R.menu.library_item_action_menu, popup.getMenu());
+                        popup.show();
+                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
                         {
-                            progressBar.setProgress(0);
-                        }
-                    }
-                });
-            }
-
-            ImageView deleteIcon = (ImageView) convertView.findViewById(R.id.imageTrash);
-            if ( deleteIcon !=null )
-            {
-                deleteIcon.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        AlertDialog.Builder deleteAlert = new AlertDialog.Builder(getContext(), R.style.dialogThemeDark);
-                        deleteAlert.setMessage(R.string.confirm_article_delete);
-                        deleteAlert.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which)
-                            {
-                                if ( item.delete() )
-                                {
-                                    Adapter.super.remove(item);
-                                }
-                                else
-                                {
-                                    Toast.makeText(getContext(), getContext().getString(R.string.failed_article_delete), Toast.LENGTH_LONG).show();
-                                }
-                            }
+                             @Override
+                             public boolean onMenuItemClick(MenuItem menuItem)
+                             {
+                                 if ( menuItem.getItemId() == R.id.actionRestart )
+                                 {
+                                     item.getMedia().restart();
+                                     if ( progressBar != null )
+                                     {
+                                         progressBar.setProgress(0);
+                                     }
+                                 }
+                                 else if ( menuItem.getItemId() == R.id.actionDelete )
+                                 {
+                                     AlertDialog.Builder deleteAlert = new AlertDialog.Builder(getContext(), R.style.dialogThemeDark);
+                                     deleteAlert.setMessage(R.string.confirm_article_delete);
+                                     deleteAlert.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                                     {
+                                         @Override
+                                         public void onClick(DialogInterface dialog, int which)
+                                         {
+                                             if ( item.delete() )
+                                             {
+                                                 Adapter.super.remove(item);
+                                             }
+                                             else
+                                             {
+                                                 Toast.makeText(getContext(), getContext().getString(R.string.failed_article_delete), Toast.LENGTH_LONG).show();
+                                             }
+                                         }
+                                     });
+                                     deleteAlert.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
+                                     {
+                                         @Override
+                                         public void onClick(DialogInterface dialog, int which)
+                                         {
+                                             dialog.cancel();
+                                         }
+                                     });
+                                     deleteAlert.show();
+                                 }
+                                 else if ( menuItem.getItemId() == R.id.actionShowRaw )
+                                 {
+                                     Intent intent = new Intent(Intent.ACTION_VIEW);
+                                     String authority = getContext().getApplicationContext().getPackageName() +  ".provider";
+                                     Uri extractFile = FileProvider.getUriForFile(getContext(), authority, item.getExtractFilePath());
+                                     intent.setDataAndType(extractFile,"text/plain");
+                                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                     getContext().startActivity(intent);
+                                 }
+                                 return false;
+                             }
                         });
-                        deleteAlert.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which)
-                            {
-                                dialog.cancel();
-                            }
-                        });
-                        deleteAlert.show();
                     }
                 });
             }
