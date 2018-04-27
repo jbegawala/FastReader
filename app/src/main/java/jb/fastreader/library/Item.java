@@ -15,7 +15,7 @@ import jb.fastreader.rsvp.IRSVPMedia;
 
 class Item implements Comparable<Item>
 {
-    IRSVPMedia media;
+    private IRSVPMedia media;
     private int ID;
     private String filename;
     private String title;
@@ -68,10 +68,9 @@ class Item implements Comparable<Item>
         {
             File filePath = new File(DatabaseHelper.getInstance(null).getArticleDirectory(), this.filename);
             filePath.delete();
-            File extractFilePath = new File(DatabaseHelper.getInstance(null).getExtractDirectory(), this.filename + ".txt");
-            if ( extractFilePath.exists() )
+            if ( this.getExtractFilePath().exists() )
             {
-                extractFilePath.delete();
+                this.getExtractFilePath().delete();
             }
             return true;
         }
@@ -81,6 +80,11 @@ class Item implements Comparable<Item>
     File getExtractFilePath()
     {
         return new File(DatabaseHelper.getInstance(null).getExtractDirectory(), this.filename + ".txt");
+    }
+
+    boolean hasExtract()
+    {
+        return this.getExtractFilePath().exists();
     }
 
     @Override

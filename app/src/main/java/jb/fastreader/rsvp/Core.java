@@ -152,10 +152,9 @@ class Core
             synchronized (mediaStatusSync)
             {
                 mediaParseStatus = MediaParseStatus.NOT_STARTED;
-                Toast.makeText(Core.this.context, Core.this.context.getString(R.string.failed_article_save) + ": " + failedToSave.getMessage(), Toast.LENGTH_LONG).show();
             }
 
-            this.bus.post(BusEvent.ARTICLESAVE_FAIL);
+            this.bus.post(new BusEventFail(BusEvent.ARTICLESAVE_FAIL, failedToSave.getMessage()));
         }
 
         return media;
@@ -250,8 +249,7 @@ class Core
             public void onFailure(int statusCode, Header[] headers, String res, Throwable t)
             {
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
-                bus.post(BusEvent.WEBSERVICE_FAIL);
-                Toast.makeText(Core.this.context, Core.this.context.getString(R.string.failed_webservice) + ": " + statusCode, Toast.LENGTH_LONG).show();
+                bus.post(new BusEventFail(BusEvent.WEBSERVICE_FAIL, Core.this.context.getString(R.string.failed_webservice) + ": " + statusCode));
                 Log.i("Webservice fail", res);
             }
         });
@@ -329,4 +327,26 @@ class Core
 //        int maxChars = Math.round(this.getWidth() / this.calculateLengthOfPrintedMonospaceCharacters(1));
 //        return maxChars * this.getLineCount();
 //    }
+}
+
+class BusEventFail
+{
+    final private Core.BusEvent event;
+    final private String details;
+
+    BusEventFail(Core.BusEvent event, String details)
+    {
+        this.event = event;
+        this.details = details;
+    }
+
+    Core.BusEvent getEvent()
+    {
+        return this.event;
+    }
+
+    String getDetails()
+    {
+        return this.details;
+    }
 }

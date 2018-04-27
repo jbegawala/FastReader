@@ -217,7 +217,12 @@ public class Fragment extends android.support.v4.app.Fragment
                 }
             });
         }
-        else if (event == Core.BusEvent.WEBSERVICE_FAIL || event == Core.BusEvent.ARTICLESAVE_FAIL)
+    }
+
+    @Subscribe
+    public void ProcessBusEvent(final BusEventFail eventFail)
+    {
+        if ( eventFail.getEvent() == Core.BusEvent.WEBSERVICE_FAIL || eventFail.getEvent() == Core.BusEvent.ARTICLESAVE_FAIL )
         {
             // Go back to library
             getActivity().runOnUiThread(new Runnable()
@@ -231,6 +236,8 @@ public class Fragment extends android.support.v4.app.Fragment
                         libraryFragment = new jb.fastreader.library.Fragment();
                     }
                     getFragmentManager().beginTransaction().replace(R.id.activity, libraryFragment, LIBRARY_FRAGMENT).commit();
+
+                    Toast.makeText(getContext(), eventFail.getDetails(), Toast.LENGTH_LONG).show();
                 }
             });
         }

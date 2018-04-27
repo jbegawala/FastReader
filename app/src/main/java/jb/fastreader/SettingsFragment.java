@@ -14,7 +14,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
  */
 public class SettingsFragment extends PreferenceFragmentCompat
 {
-    private static final int STORAGE_PERMISSION_CODE = 0;
+    public static final int STORAGE_PERMISSION_CODE = 0;
     public SettingsFragment()
     {
         // Required empty public constructor

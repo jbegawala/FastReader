@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.List;
 
 import jb.fastreader.R;
+import jb.fastreader.Settings;
 
 /**
  * Created by Junaid Begawala on 4/5/18.
@@ -94,6 +95,16 @@ class Adapter extends ArrayAdapter<Item>
                         Context wrapper = new ContextThemeWrapper(getContext(), R.style.popupThemeDark);
                         PopupMenu popup = new PopupMenu(wrapper, view);
                         popup.getMenuInflater().inflate(R.menu.library_item_action_menu, popup.getMenu());
+
+                        // Don't show option to display extract if not configured, no permission, or no extract
+                        if ( !Settings.saveRawExtract(getContext()) || !item.hasExtract() )
+                        {
+                            MenuItem showRawMenuItem = popup.getMenu().findItem(R.id.actionShowRaw);
+                            if ( showRawMenuItem != null )
+                            {
+                                showRawMenuItem.setVisible(false);
+                            }
+                        }
                         popup.show();
                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
                         {
