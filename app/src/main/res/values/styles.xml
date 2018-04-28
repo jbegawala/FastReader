@@ -26,6 +26,8 @@
 
     <style name="popupThemeDark" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:itemBackground">@color/ultra_subdued_text_dark</item>
+        <item name="android:colorBackground">@color/subdued_text_dark</item>
+
     </style>
 
     <style name="dialogThemeDark" parent="Theme.AppCompat.Light.Dialog.Alert">

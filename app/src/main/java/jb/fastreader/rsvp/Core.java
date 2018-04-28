@@ -84,6 +84,10 @@ class Core
                     ArticleExtractor extractor = new ArticleExtractor();
                     String content = extractor.getText(url);
                     String title = extractor.getTitle();
+                    if ( title == null )
+                    {
+                        title = Core.this.context.getResources().getString(R.string.missing_article_title);
+                    }
                     page = Core.this.createMedia(title, uri.toString(), content);
                 }
             }

@@ -99,7 +99,7 @@ class Adapter extends ArrayAdapter<Item>
                         // Don't show option to display extract if not configured, no permission, or no extract
                         if ( !Settings.saveRawExtract(getContext()) || !item.hasExtract() )
                         {
-                            MenuItem showRawMenuItem = popup.getMenu().findItem(R.id.actionShowRaw);
+                            MenuItem showRawMenuItem = popup.getMenu().findItem(R.id.actionDebugMenu);
                             if ( showRawMenuItem != null )
                             {
                                 showRawMenuItem.setVisible(false);
@@ -154,6 +154,15 @@ class Adapter extends ArrayAdapter<Item>
                                      String authority = getContext().getApplicationContext().getPackageName() +  ".provider";
                                      Uri extractFile = FileProvider.getUriForFile(getContext(), authority, item.getExtractFilePath());
                                      intent.setDataAndType(extractFile,"text/plain");
+                                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                     getContext().startActivity(intent);
+                                 }
+                                 else if ( menuItem.getItemId() == R.id.actionShowProcessed )
+                                 {
+                                     Intent intent = new Intent(Intent.ACTION_VIEW);
+                                     String authority = getContext().getApplicationContext().getPackageName() +  ".provider";
+                                     Uri extractFile = FileProvider.getUriForFile(getContext(), authority, item.getProcessedFilePath());
+                                     intent.setDataAndType(extractFile,"text/csv");
                                      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                      getContext().startActivity(intent);
                                  }

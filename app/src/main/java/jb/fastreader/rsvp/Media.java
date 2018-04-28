@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public abstract class Media implements IRSVPMedia
         this.uri = uri;
 
         // Process media
+        text = this.preProcessText(text);
         this.processText(text);
         this.indexContent();
 
@@ -81,16 +83,56 @@ public abstract class Media implements IRSVPMedia
 
             if ( Settings.saveRawExtract(context) )
             {
-                File extractFile = new File(DatabaseHelper.getInstance(context).getExtractDirectory(), fileName + ".txt");
+                File root = DatabaseHelper.getInstance(context).getExtractDirectory();
+                if ( !root.exists() && !root.mkdir())
+                {
+                    throw new FailedToSave("Failed to create directory on external storage");
+                }
+                File extractFile = new File(root, fileName + ".txt");
                 FileOutputStream extractFos = new FileOutputStream(extractFile, false);
                 extractFos.write(text.getBytes());
-                fos.close();
+                extractFos.close();
+
+                root = DatabaseHelper.getInstance(context).getProcessedMediaDirectory();
+                if ( !root.exists() && !root.mkdir())
+                {
+                    throw new FailedToSave("Failed to create directory on external storage");
+                }
+                File processedFile = new File(root, fileName + ".csv");
+                FileWriter fileWriter = new FileWriter(processedFile);
+                String line;
+                Word word;
+                String delim = "\",\"";
+                fileWriter.write("\"Word fragment" + delim + "New word?" + delim + "New sentence?" + delim + "New paragraph?\"\n");
+                for ( int i = 0; i < this.content.size(); i++ )
+                {
+                    word = this.content.get(i);
+                    line = "\"" + word.getWord() + delim + word.isNewWord() + delim + word.isNewSentence() + delim + word.isNewParagraph() + "\"\n";
+                    fileWriter.write(line);
+                }
+                fileWriter.close();
             }
         }
         catch (java.io.IOException e)
         {
             throw new FailedToSave(e.getMessage());
         }
+    }
+
+    /**
+     * Additional cleanup of extracted content. This separate step returns the content so that it can
+     * be logged for further analysis.
+     * @param text A string of raw text extracted from an article
+     * @return Cleaner string
+     */
+    private String preProcessText(String text)
+    {
+        text = text.replaceAll("[\\x00-\\x1F]","");     // delete non-printable characters
+        text = text.trim().replaceAll("/\\s+/g", " ");  // delete extra spaces
+        text = text.replaceAll(" ?[\\r\\n]+", "\n");    // clean up end of line
+        text = text.replaceAll("\\xA0"," ");            // replace nbsp with space
+
+        return text;
     }
 
     /**
@@ -108,7 +150,7 @@ public abstract class Media implements IRSVPMedia
         boolean isNewSentence;
         ArrayList<Word> wordList = new ArrayList<>();
 
-        paragraphs = input.trim().replaceAll("/\\s+/g", " ").replaceAll(" ?[\\r\\n]+", "\n").split("\\n");
+        paragraphs = input.split("\\n");
         for (int p = 0; p < paragraphs.length; p++)
         {
             sentences = paragraphs[p].split("\\.");

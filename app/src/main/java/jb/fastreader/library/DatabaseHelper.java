@@ -25,6 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 {
     private static final String ARTICLE_DIRECTORY = "articles";
     private static final String EXTRACT_DIRECTORY = "extracted";
+    private static final String PROCESSED_DIRECTORY = "processed";
     private static DatabaseHelper dbHelper = null;
     private Context context;
 
@@ -60,6 +61,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public File getExtractDirectory()
     {
         return new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + this.context.getResources().getString(R.string.app_name) + File.separator + EXTRACT_DIRECTORY);
+    }
+
+    public File getProcessedMediaDirectory()
+    {
+        return new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + this.context.getResources().getString(R.string.app_name) + File.separator + PROCESSED_DIRECTORY);
     }
 
     @Override

@@ -82,6 +82,11 @@ class Item implements Comparable<Item>
         return new File(DatabaseHelper.getInstance(null).getExtractDirectory(), this.filename + ".txt");
     }
 
+    File getProcessedFilePath()
+    {
+        return new File(DatabaseHelper.getInstance(null).getProcessedMediaDirectory(), this.filename + ".csv");
+    }
+
     boolean hasExtract()
     {
         return this.getExtractFilePath().exists();
