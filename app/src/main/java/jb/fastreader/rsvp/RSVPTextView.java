@@ -327,11 +327,14 @@ public class RSVPTextView extends AppCompatTextView
 
         Word word = this.content.next();
 
-        Spannable spanRange = new SpannableString(word.getWord());
-        TextAppearanceSpan tas = new TextAppearanceSpan(getContext(), R.style.PivotLetter);
-        spanRange.setSpan(tas, word.getPivotPosition(), word.getPivotPosition()+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        this.setText(spanRange);
+        for ( int i = 0; i < word.getFragmentCount(); i++ )
+        {
+            Spannable spanRange = new SpannableString(word.getWordFragment(i));
+            TextAppearanceSpan tas = new TextAppearanceSpan(getContext(), R.style.PivotLetter);
+            spanRange.setSpan(tas, word.getPivotPosition(i), word.getPivotPosition(i)+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            this.setText(spanRange);
 
-        Thread.sleep(this.getInterWordDelay() * word.getDelayFactor());
+            Thread.sleep(this.getInterWordDelay() * word.getDelayFactor(i));
+        }
     }
 }

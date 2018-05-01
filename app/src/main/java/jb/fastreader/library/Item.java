@@ -1,6 +1,7 @@
 package jb.fastreader.library;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +16,7 @@ import jb.fastreader.rsvp.IRSVPMedia;
 
 class Item implements Comparable<Item>
 {
+    private static final String TAG = Item.class.getSimpleName();
     private IRSVPMedia media;
     private int ID;
     private String filename;
@@ -44,6 +46,11 @@ class Item implements Comparable<Item>
     }
     int getProgress()
     {
+        if ( this.wordCount == 0 )
+        {
+            Log.i(TAG, this.title + " resulted in 0 wordcount");
+            return 0;
+        }
         return this.position * 100 / this.wordCount;
     }
 
