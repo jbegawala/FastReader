@@ -21,7 +21,7 @@ public interface IRSVPMedia extends Serializable
 
     void rewindCurrentParagraph();
 
-    void restart();
+    void setIndex(int index);
 
     void saveState();
 

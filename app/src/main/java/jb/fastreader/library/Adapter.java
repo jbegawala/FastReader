@@ -7,8 +7,10 @@ import android.net.Uri;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -27,6 +29,7 @@ import java.util.List;
 
 import jb.fastreader.R;
 import jb.fastreader.Settings;
+import jb.fastreader.rsvp.IRSVPMedia;
 
 /**
  * Created by Junaid Begawala on 4/5/18.
@@ -113,11 +116,14 @@ class Adapter extends ArrayAdapter<Item>
                              {
                                  if ( menuItem.getItemId() == R.id.actionRestart )
                                  {
-                                     item.getMedia().restart();
+                                     IRSVPMedia media = item.getMedia();
+                                     media.setIndex(0);
                                      if ( progressBar != null )
                                      {
                                          progressBar.setProgress(0);
                                      }
+                                     FragmentManager fragmentManager = ((AppCompatActivity) Adapter.this.context).getSupportFragmentManager();
+                                     jb.fastreader.rsvp.Fragment.openMediaViaIntent(fragmentManager, media);
                                  }
                                  else if ( menuItem.getItemId() == R.id.actionDelete )
                                  {

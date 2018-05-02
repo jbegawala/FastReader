@@ -236,7 +236,8 @@ abstract class Media implements IRSVPMedia
     @Override
     public void saveState()
     {
-        DatabaseHelper.getInstance(null).updateArticle(this.ID, this.wordIndex);
+        int startOfSentence = this.mapToIndex.get(SENTENCE).get(Math.max(this.sentenceIndex - 1, 0));
+        DatabaseHelper.getInstance(null).updateArticle(this.ID, startOfSentence);
     }
 
     @Override
@@ -278,11 +279,21 @@ abstract class Media implements IRSVPMedia
     }
 
     @Override
-    public void restart()
+    public void setIndex(int index)
     {
-        this.wordIndex = 0;
-        this.sentenceIndex = 0;
-        this.paragraphIndex = 0;
+        if ( index == 0 || index >= this.wordCount )
+        {
+            this.wordIndex = 0;
+            this.sentenceIndex = 0;
+            this.paragraphIndex = 0;
+        }
+        else
+        {
+            this.wordIndex = index;
+            this.sentenceIndex = this.mapFromIndex[SENTENCE][index];
+            this.paragraphIndex = this.mapFromIndex[PARAGRAPH][index];
+        }
+        this.saveState();
     }
 
     @Override

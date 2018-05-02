@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -34,6 +35,7 @@ import static jb.fastreader.library.Library.LIBRARY_FRAGMENT;
 public class Fragment extends android.support.v4.app.Fragment
 {
     private static final String TAG = Fragment.class.getSimpleName();
+    static final String RSVP_FRAGMENT = "RSVP_FRAGMENT";
 
     private Core core;
 
@@ -155,6 +157,20 @@ public class Fragment extends android.support.v4.app.Fragment
         }
 
         return root;
+    }
+
+    public static void openMediaViaIntent(FragmentManager fragmentManager, IRSVPMedia media)
+    {
+        Fragment rsvpFragment = (Fragment) fragmentManager.findFragmentByTag(RSVP_FRAGMENT);
+        if ( rsvpFragment == null )
+        {
+            rsvpFragment = new Fragment();
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("media", media);
+        rsvpFragment.setArguments(bundle);
+        fragmentManager.beginTransaction().replace(R.id.activity, rsvpFragment, RSVP_FRAGMENT).addToBackStack(null).commit();
     }
 
     @Override

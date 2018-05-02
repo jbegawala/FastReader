@@ -63,6 +63,7 @@ class Item implements Comparable<Item>
             {
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 this.media = (IRSVPMedia) ois.readObject();
+                this.media.setIndex(this.position);
             }
             catch (IOException | ClassNotFoundException e) {}
         }

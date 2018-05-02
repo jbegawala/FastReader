@@ -13,8 +13,6 @@ import java.util.List;
 import jb.fastreader.FastReader;
 import jb.fastreader.R;
 
-import static jb.fastreader.rsvp.RSVP.RSVP_FRAGMENT;
-
 /**
  * Created by Junaid Begawala on 4/8/18.
  */
@@ -53,14 +51,6 @@ public class Fragment extends ListFragment
     {
         super.onListItemClick(l, v, position, id);
 
-        jb.fastreader.rsvp.Fragment rsvpFragment = (jb.fastreader.rsvp.Fragment) getFragmentManager().findFragmentByTag(RSVP_FRAGMENT);
-        if ( rsvpFragment == null )
-        {
-            rsvpFragment = new jb.fastreader.rsvp.Fragment();
-        }
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("media", this.items.get(position).getMedia());
-        rsvpFragment.setArguments(bundle);
-        getFragmentManager().beginTransaction().replace(R.id.activity, rsvpFragment, RSVP_FRAGMENT).addToBackStack(null).commit();
+        jb.fastreader.rsvp.Fragment.openMediaViaIntent(getFragmentManager(), this.items.get(position).getMedia());
     }
 }

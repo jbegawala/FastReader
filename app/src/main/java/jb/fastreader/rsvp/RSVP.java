@@ -19,7 +19,6 @@ import jb.fastreader.SettingsFragment;
 public class RSVP extends AppCompatActivity
 {
     public static final String TAG = RSVP.class.getSimpleName();
-    public static final String RSVP_FRAGMENT = "RSVP_FRAGMENT";
     private Bus bus;
 
     @Override
@@ -31,7 +30,7 @@ public class RSVP extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.activity, new Fragment(), RSVP_FRAGMENT).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.activity, new Fragment(), Fragment.RSVP_FRAGMENT).commit();
 
         FastReader frApp = (FastReader) getApplication();
         this.bus = frApp.getBus();
@@ -137,6 +136,6 @@ public class RSVP extends AppCompatActivity
 
     private Fragment getFragment()
     {
-        return ((Fragment) getSupportFragmentManager().findFragmentByTag(RSVP_FRAGMENT));
+        return ((Fragment) getSupportFragmentManager().findFragmentByTag(Fragment.RSVP_FRAGMENT));
     }
 }

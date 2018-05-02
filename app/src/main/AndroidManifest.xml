@@ -30,6 +30,7 @@
 
         <activity
             android:name="jb.fastreader.library.Library"
+            android:screenOrientation="portrait"
             android:label="@string/app_name" >
 
             <intent-filter>
@@ -39,7 +40,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="jb.fastreader.rsvp.RSVP" >
+        <activity
+            android:name="jb.fastreader.rsvp.RSVP"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
