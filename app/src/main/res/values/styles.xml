@@ -18,22 +18,21 @@
         <item name="book_icon">@drawable/ic_book_white</item>
         <item name="subdued_text">@color/subdued_text_dark</item>
         <item name="ultra_subdued_text">@color/ultra_subdued_text_dark</item>
-        <item name="list_bg">@color/dark_list_bg</item>
 
         <item name="text_color">@color/text_color_dark</item>
 
     </style>
 
     <style name="popupThemeDark" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:itemBackground">@color/ultra_subdued_text_dark</item>
-        <item name="android:colorBackground">@color/subdued_text_dark</item>
+        <item name="android:itemBackground">@color/secondary_background_dark</item>
+        <item name="android:colorBackground">@color/tertiary_background_dark</item>
 
     </style>
 
     <style name="dialogThemeDark" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:textColorPrimary">?attr/text_color</item>
         <item name="android:textColorSecondary">?attr/text_color</item>
-        <item name="android:background">@color/ultra_subdued_text_dark</item>
+        <item name="android:background">@color/secondary_background_dark</item>
     </style>
 
     <style name="settingsThemeDark">
@@ -68,7 +67,6 @@
     <attr name="text_color" format="reference" />
     <attr name="subdued_text" format="reference" />
     <attr name="ultra_subdued_text" format="reference" />
-    <attr name="list_bg" format="reference" />
     <attr name="chrome_bg" format="reference" />
 
 </resources>

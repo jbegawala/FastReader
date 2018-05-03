@@ -131,7 +131,7 @@
         android:layout_marginBottom="@dimen/inner_margin"
         android:layout_marginStart="@dimen/inner_margin"
         android:clickable="true"
-        android:textColor="@color/chapter_text_color"
+        android:textColor="@color/progress_bar"
         android:textSize="22sp" />
 
     <Switch

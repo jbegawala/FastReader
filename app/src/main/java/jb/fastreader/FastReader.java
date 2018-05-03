@@ -35,7 +35,7 @@ public class FastReader extends Application
 
         Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
-        toolbar.setTitleTextColor(fragment.getResources().getColor(R.color.background_light, null));
+        toolbar.setTitleTextColor(fragment.getResources().getColor(R.color.text_color_dark, null));
         toolbar.inflateMenu(R.menu.toolbar);
 
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener()

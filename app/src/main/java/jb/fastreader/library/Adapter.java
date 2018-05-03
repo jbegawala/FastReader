@@ -54,7 +54,7 @@ class Adapter extends ArrayAdapter<Item>
     {
         if ( convertView == null )
         {
-            convertView = LayoutInflater.from(this.context).inflate(id, null);
+            convertView = LayoutInflater.from(this.context).inflate(this.id, null);
         }
 
         final Item item = this.items.get(position);

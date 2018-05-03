@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ImageView
+    <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/actionMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,8 +15,8 @@
         android:maxWidth="50dp"
         android:minHeight="50dp"
         android:minWidth="50dp"
-        android:scaleType="fitXY"
-        android:src="@drawable/threedotwhite" />
+        android:background="@color/background_dark"
+        android:src="@drawable/ic_more_vert" />
 
     <TextView
         android:id="@+id/itemTitle"
