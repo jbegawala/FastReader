@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.PopupMenu;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -18,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -87,9 +87,10 @@ class Adapter extends ArrayAdapter<Item>
                 progressBar.setProgress(item.getProgress());
             }
 
-            ImageView actionMenu = (ImageView) convertView.findViewById(R.id.actionMenu);
+            AppCompatImageButton actionMenu = (AppCompatImageButton) convertView.findViewById(R.id.actionMenu);
             if ( actionMenu != null )
             {
+                actionMenu.setFocusable(false);
                 actionMenu.setOnClickListener(new View.OnClickListener()
                 {
                     @Override

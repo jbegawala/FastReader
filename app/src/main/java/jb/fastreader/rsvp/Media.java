@@ -24,6 +24,12 @@ abstract class Media implements IRSVPMedia
     static final int LONG_WORD_DELAY_THRESHOLD = 8;
     private static final int SENTENCE = 0;
     private static final int PARAGRAPH = 1;
+    private static final char SENTENCE_MARKER = '\u0001';   // Removed during preprocessing
+    private static final char PARAGRAPH_MARKER = '\u0002';  // Removed during preprocessing
+    private static final String END_OF_SENTENCE_CHARS_NO_PERIOD = "\\?!;";
+    private static final String END_OF_SENTENCE_CHARS = "\\." + END_OF_SENTENCE_CHARS_NO_PERIOD;
+    private static final String GROUPING_OPEN_CHARS = "\\(\\[{“";
+    private static final String GROUPING_CLOSE_CHARS = "\\)\\]}”";
 
     private long ID;
     private String title;
@@ -56,8 +62,8 @@ abstract class Media implements IRSVPMedia
         }
 
         // Process media
-        text = this.preProcessText(text);
-        this.processText(text);
+        text = this.processText(text);
+        this.importText(text);
         this.indexContent();
 
         // Save media
@@ -130,39 +136,99 @@ abstract class Media implements IRSVPMedia
     }
 
     /**
-     * Additional cleanup of extracted content. This separate step returns the content so that it can
-     * be logged for further analysis.
+     * Divides text into sentences
      * @param text A string of raw text extracted from an article
      * @return Cleaner string
      */
-    private String preProcessText(String text)
+    private String processText(String text)
     {
-        String groupingOpen = "\\(\\[{“";
-        String groupingClose = "\\)\\]}”";
-        String endOfSentence = "\\.\\?!;";
-        text = text.replaceAll("[\\x00-\\x09\\x0B\\x0C\\x0E\\x1F]",""); // delete non-printable characters
+        ArrayList<String> noSplitList = loadDoNotSplit();
+        StringBuilder builder = new StringBuilder(1250);
+
+        String[] paragraphs = preProcessText(text).split(Character.toString(PARAGRAPH_MARKER));
+        String[] words;
+        String tmp;
+        String[] words2;
+        for ( int i = 0; i < paragraphs.length; i++ )
+        {
+            words = paragraphs[i].trim().split(" +");
+            for ( int j = 0; j < words.length; j++ )
+            {
+                words2 = words[j].replaceAll("([" + GROUPING_OPEN_CHARS + "]*[^" + GROUPING_OPEN_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + GROUPING_CLOSE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*[" + END_OF_SENTENCE_CHARS_NO_PERIOD +"]+[" + GROUPING_CLOSE_CHARS + "]*)" +
+                        "([" + GROUPING_OPEN_CHARS + "]*[^" + GROUPING_OPEN_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + GROUPING_CLOSE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*)", "$1 $2").trim().split(" ");
+
+                for ( int k = 0; k < words2.length; k++ )
+                {
+                    tmp = words2[k].replaceAll("[" + GROUPING_OPEN_CHARS + "]*([^" + GROUPING_OPEN_CHARS + GROUPING_CLOSE_CHARS + "]+)[" + GROUPING_CLOSE_CHARS + "]*", "$1").toUpperCase();
+                    if ( noSplitList.contains(tmp) || tmp.matches(".*[0-9]+\\.[0-9]+") )
+                    {
+                        builder.append(words2[k]).append(" ");
+                    }
+                    else
+                    {
+                        // Label end of sentence and infer two words accidentally joined together
+                        builder.append(words2[k].replaceAll("([" + END_OF_SENTENCE_CHARS + "]+)", "$1" + SENTENCE_MARKER).replaceAll("([a-z0-9]+)([A-Z][a-z0-9]+)","$1 $2")).append(" ");
+                    }
+                }
+            }
+            builder.append(PARAGRAPH_MARKER);
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Additional cleanup of extracted content
+     * @param text A string of raw text extracted from an article
+     * @return Cleaner string
+     */
+    private static String preProcessText(String text)
+    {
+        text = text.replaceAll("[\\x00-\\x09\\x0B\\x0C\\x0E\\x1F]",""); // delete non-printable characters (some are used by data structure)
         text = text.replaceAll("\\xA0"," ");                            // replace nbsp with space
         text = text.trim().replaceAll(" +", " ");                       // remove extra spaces
-        text = text.replaceAll(" ?[\\r\\n]+", "\n");                    // clean up end of line
+        text = text.replaceAll(" ?[\\r\\n]+", Character.toString(PARAGRAPH_MARKER));  // clean up and label end of paragraph
 
-        text = text.replaceAll("([" + endOfSentence + "]+) ?([" + groupingClose + "]+)","$2$1");    // correct order
-        text = text.replaceAll("([^ ])([" + groupingOpen + "])","$1 $2");
-        text = text.replaceAll("([" + groupingOpen + "]) ([A-Za-z0-9])","$1$2");                    // Split from below because grouping could enclose multiple sentences
-        text = text.replaceAll("([A-Za-z0-9]) ([" + groupingClose + endOfSentence + "])","$1$2");   // remove space between characters and comma
-        text = text.replaceAll("([" + groupingClose + endOfSentence + "–—])+([A-Za-z0-9])","$1 $2");   // make sure there is a space after punctuation
-        text = text.replaceAll("([A-Za-z" + groupingClose + "]) ?, ?([A-Za-z0-9" + groupingOpen + "])", "$1, $2");
-        text = text.replaceAll("([0-9" + groupingClose + "]),([A-Za-z" + groupingOpen + "])", "$1, $2");
-        text = text.replaceAll("([a-z0-9]+)([A-Z][a-z0-9]+)","$1 $2");  // infer two words accidentally joined together
+        text = text.replaceAll("([^ ])([" + GROUPING_OPEN_CHARS + "])","$1 $2");
+        text = text.replaceAll("([" + GROUPING_OPEN_CHARS + "]) ([A-Za-z0-9])","$1$2");                    // Remove extra spaces (split from below because grouping could enclose multiple sentences)
+        text = text.replaceAll("([A-Za-z0-9]) ([" + GROUPING_CLOSE_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + "])","$1$2");
+        text = text.replaceAll("([" + GROUPING_CLOSE_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + "–—])+([A-Za-z0-9])","$1 $2");   // make sure there is a space after punctuation
+        text = text.replaceAll("([A-Za-z" + GROUPING_CLOSE_CHARS + "]) ?, ?([A-Za-z0-9" + GROUPING_OPEN_CHARS + "])", "$1, $2");
+        text = text.replaceAll("([0-9" + GROUPING_CLOSE_CHARS + "]),([A-Za-z" + GROUPING_OPEN_CHARS + "])", "$1, $2");
 
         return text;
     }
 
     /**
-     * Processes content into an array of strings to flash to user. Long words will be spread
-     * out over multiple entries.
-     * @param input A string without any markup or formatting
+     * Builds a list of some abbreviations that shouldn't be considered end of sentence
+     * @return List of abbreviations
      */
-    private void processText(String input)
+    private static ArrayList<String> loadDoNotSplit()
+    {
+        ArrayList<String> list = new ArrayList<>(1);
+        list.add("U.S.");
+        list.add("PROF.");
+        list.add("DR.");
+        list.add("MR.");
+        list.add("MRS.");
+        list.add("JR.");
+        list.add("I.E.");
+        list.add("E.G.");
+        list.add("ETC.");
+        list.add("ST.");
+        list.add("CORP.");
+        list.add("INC.");
+        list.add("LTD.");
+        list.add("R.S.V.P.");
+        list.add("YOUTUBE");
+        return list;
+    }
+
+    /**
+     * Imports processed text into data structure.
+     * @param processedText A string without any markup or formatting
+     */
+    private void importText(String processedText)
     {
         String[] paragraphs;
         String[] sentences;
@@ -172,13 +238,13 @@ abstract class Media implements IRSVPMedia
         boolean isNewSentence;
         ArrayList<Word> wordList = new ArrayList<>();
 
-        paragraphs = input.split("\\n");
+        paragraphs = processedText.split(Character.toString(PARAGRAPH_MARKER));
         for (int p = 0; p < paragraphs.length; p++)
         {
-            sentences = paragraphs[p].split("\\.");
+            sentences = paragraphs[p].split(Character.toString(SENTENCE_MARKER));
             for (int s = 0; s < sentences.length; s++)
             {
-                words = sentences[s].trim().split(" ");
+                words = sentences[s].trim().split(" +");
                 for (int w = 0; w < words.length; w++)
                 {
                     isNewSentence = (w == 0);
@@ -187,10 +253,6 @@ abstract class Media implements IRSVPMedia
                     if (word.isEmpty())
                     {
                         continue;
-                    }
-                    if ( w + 1 == words.length )  // add period back to end of sentence
-                    {
-                        word += ".";
                     }
 
                     wordList.add(new Word(word, isNewSentence, isNewParagraph));
