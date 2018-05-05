@@ -55,7 +55,7 @@ class Core
         this.context = context;
         this.textView = (RSVPTextView) textView;
         this.textView.setSyncObject(this.threadSync);
-        this.textView.setWpm(Settings.getFastWpm(this.context));
+        this.textView.setWpm(Settings.getNormalWpm(this.context));
         this.textView.setBus(bus);
         this.bus = bus;
         this.mediaParseStatus = MediaParseStatus.NOT_STARTED;

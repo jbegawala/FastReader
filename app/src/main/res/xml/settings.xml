@@ -7,13 +7,13 @@
     <PreferenceCategory android:title="@string/config_cat_wpm">
         <SeekBarPreference
             android:id="@+id/wpmFast"
-            android:defaultValue="@integer/config_wpm_fast_default"
-            android:summary="@string/config_wpm_fast_desc"
-            android:key="config_wpm_fast"
+            android:defaultValue="@integer/config_wpm_normal_default"
+            android:summary="@string/config_wpm_normal_desc"
+            android:key="config_wpm_normal"
             android:max="@integer/config_wpm_max"
             asp:min="@integer/config_wpm_min"
             asp:seekBarIncrement="@integer/config_wpm_increment"
-            android:title="@string/config_wpm_fast_title" />
+            android:title="@string/config_wpm_normal_title" />
         <SeekBarPreference
             android:id="@+id/wpmSlow"
             android:defaultValue="@integer/config_wpm_slow_default"

@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TextAppearanceSpan;
@@ -15,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.squareup.otto.Bus;
@@ -44,7 +44,7 @@ public class Fragment extends android.support.v4.app.Fragment
     private TextView contentSubtitle;
     private TextView statusText;
     private ProgressBar statusVisual;
-    private Switch speedQuickToggle;
+    private SwitchCompat speedQuickToggle;
     private ImageView playButtonView;
     private ImageView rewindCurSentence;
     private ImageView rewindPrevSentence;
@@ -73,14 +73,14 @@ public class Fragment extends android.support.v4.app.Fragment
         this.statusText = ((TextView) root.findViewById(R.id.statusText));
         this.statusVisual = ((ProgressBar) root.findViewById(R.id.statusVisual));
 
-        this.speedQuickToggle = (Switch) root.findViewById(R.id.speedSwitch);
+        this.speedQuickToggle = (SwitchCompat) root.findViewById(R.id.slowSpeedSwitch);
         this.speedQuickToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
             @Override
             public void onCheckedChanged(CompoundButton speedSwitch, boolean isChecked)
             {
                 Context context = getActivity().getBaseContext();
-                int wpm = isChecked ? Settings.getFastWpm(context) : Settings.getSlowWpm(context);
+                int wpm = isChecked ? Settings.getSlowWpm(context) : Settings.getNormalWpm(context);
                 Fragment.this.core.setWpm(wpm);
             }
         });

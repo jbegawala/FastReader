@@ -128,21 +128,21 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/statusVisual"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="@dimen/inner_margin"
+        android:layout_marginBottom="2dp"
         android:layout_marginStart="@dimen/inner_margin"
         android:clickable="true"
-        android:textColor="@color/progress_bar"
         android:textSize="22sp" />
 
-    <Switch
-        android:id="@+id/speedSwitch"
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/slowSpeedSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/statusVisual"
         android:layout_alignEnd="@+id/statusVisual"
-        android:checked="true"
+        android:checked="false"
         android:showText="true"
-        android:textOff="@string/toggle_speed_slow"
-        android:textOn="@string/toggle_speed_fast" />
+        android:textSize="18sp"
+        android:textColor="@color/ultra_subdued_text_dark"
+        android:text="@string/config_wpm_slow_title"/>
 
 </RelativeLayout>
