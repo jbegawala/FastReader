@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Date;
 
 import jb.fastreader.rsvp.IRSVPMedia;
 
@@ -24,8 +25,9 @@ class Item implements Comparable<Item>
     private String uri;
     private int position;
     private int wordCount;
+    private Date date;
 
-    Item(int ID, String filename, String title, String uri, int position, int wordCount)
+    Item(int ID, String filename, String title, String uri, int position, int wordCount, Date date)
     {
         this.ID = ID;
         this.filename = filename;
@@ -33,6 +35,7 @@ class Item implements Comparable<Item>
         this.uri = uri;
         this.position = position;
         this.wordCount = wordCount;
+        this.date = date;
     }
 
     String getTitle()
@@ -44,6 +47,12 @@ class Item implements Comparable<Item>
     {
         return this.uri;
     }
+
+    Date getDate()
+    {
+        return this.date;
+    }
+
     int getProgress()
     {
         if ( this.wordCount == 0 )

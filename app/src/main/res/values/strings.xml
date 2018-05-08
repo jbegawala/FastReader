@@ -28,6 +28,7 @@
     <string name="error_could_not_load_media">Could not load media</string>
     <string name="error_while_playing">Exception encountered during playback</string>
     <string name="playButton_contentDescription">Press to begin playback</string>
+    <string name="action_share">Share</string>
     <string name="action_restart">Restart</string>
     <string name="action_delete">Delete</string>
     <string name="action_debug">Debug</string>

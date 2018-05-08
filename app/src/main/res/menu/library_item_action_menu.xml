@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/actionShare"
+        android:title="@string/action_share"/>
+
+    <item
         android:id="@+id/actionRestart"
         android:title="@string/action_restart"/>
 

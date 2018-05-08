@@ -25,7 +25,9 @@ import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import jb.fastreader.R;
 import jb.fastreader.Settings;
@@ -81,6 +83,13 @@ class Adapter extends ArrayAdapter<Item>
                 subtitle.setText(host);
             }
 
+            TextView date = (TextView) convertView.findViewById(R.id.itemDate);
+            if ( date != null )
+            {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy", Locale.US);
+                date.setText(dateFormat.format(item.getDate()));
+            }
+
             final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
             if ( progressBar != null )
             {
@@ -115,7 +124,16 @@ class Adapter extends ArrayAdapter<Item>
                              @Override
                              public boolean onMenuItemClick(MenuItem menuItem)
                              {
-                                 if ( menuItem.getItemId() == R.id.actionRestart )
+                                 if ( menuItem.getItemId() == R.id.actionShare )
+                                 {
+                                     Intent intent = new Intent(Intent.ACTION_SEND);
+                                     intent.setType("text/plain");
+                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                     intent.putExtra(Intent.EXTRA_SUBJECT, item.getTitle());
+                                     intent.putExtra(Intent.EXTRA_TEXT, item.getUriString());
+                                     getContext().startActivity(Intent.createChooser(intent, getContext().getString(R.string.action_share)));
+                                 }
+                                 else if ( menuItem.getItemId() == R.id.actionRestart )
                                  {
                                      IRSVPMedia media = item.getMedia();
                                      media.setIndex(0);
@@ -124,7 +142,7 @@ class Adapter extends ArrayAdapter<Item>
                                          progressBar.setProgress(0);
                                      }
                                      FragmentManager fragmentManager = ((AppCompatActivity) Adapter.this.context).getSupportFragmentManager();
-                                     jb.fastreader.rsvp.Fragment.openMediaViaIntent(fragmentManager, media);
+                                     jb.fastreader.rsvp.Fragment.openMedia(fragmentManager, media);
                                  }
                                  else if ( menuItem.getItemId() == R.id.actionDelete )
                                  {

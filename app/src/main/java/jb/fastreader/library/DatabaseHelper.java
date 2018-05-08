@@ -8,12 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 import jb.fastreader.R;
 
@@ -76,7 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 + "," + COL_FILENAME + " TEXT"
                 + "," + COL_TITLE + " TEXT"
                 + "," + COL_URI + " TEXT"
-                + "," + COL_SAVED_DATE + " TEXT"
+                + "," + COL_SAVED_DATE + " INTEGER"
                 + "," + COL_POSITION + " INTEGER"
                 + "," + COL_WORD_COUNT + " INTEGER"
                 + ")";
@@ -100,6 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         int fileNameIndex = response.getColumnIndex(COL_FILENAME);
         int titleIndex = response.getColumnIndex(COL_TITLE);
         int uriIndex = response.getColumnIndex(COL_URI);
+        int dateIndex = response.getColumnIndex(COL_SAVED_DATE);
         int positionIndex = response.getColumnIndex(COL_POSITION);
         int wordCountIndex = response.getColumnIndex(COL_WORD_COUNT);
 
@@ -111,7 +110,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
             String uri = response.getString(uriIndex);
             int position = response.getInt(positionIndex);
             int wordCount = response.getInt(wordCountIndex);
-            Item item = new Item(ID, filename, title, uri, position, wordCount);
+            Date date = new Date(response.getLong(dateIndex)*1000);
+            Item item = new Item(ID, filename, title, uri, position, wordCount, date);
             libraryContents.add(item);
         }
 
@@ -145,8 +145,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         values.put(COL_FILENAME, filename);
         values.put(COL_TITLE, title);
         values.put(COL_URI, uri);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        values.put(COL_SAVED_DATE, dateFormat.format(new Date()));
+        values.put(COL_SAVED_DATE, System.currentTimeMillis()/1000);
         values.put(COL_POSITION, position);
         values.put(COL_WORD_COUNT, wordCount);
 

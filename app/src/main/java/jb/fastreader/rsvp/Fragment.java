@@ -138,7 +138,6 @@ public class Fragment extends android.support.v4.app.Fragment
             }
         });
 
-
         this.loadingIcon = (ProgressBar) root.findViewById(R.id.loadingIcon);
 
         FastReader app = (FastReader) getActivity().getApplication();
@@ -159,7 +158,7 @@ public class Fragment extends android.support.v4.app.Fragment
         return root;
     }
 
-    public static void openMediaViaIntent(FragmentManager fragmentManager, IRSVPMedia media)
+    public static void openMedia(FragmentManager fragmentManager, IRSVPMedia media)
     {
         Fragment rsvpFragment = (Fragment) fragmentManager.findFragmentByTag(RSVP_FRAGMENT);
         if ( rsvpFragment == null )
@@ -178,7 +177,7 @@ public class Fragment extends android.support.v4.app.Fragment
     {
         super.onResume();
 
-        // Should this just call pause/startSprizter?
+        // Should this just call pause/start?
         if (!this.core.isPlaying())
         {
             this.updateMetaInfo();

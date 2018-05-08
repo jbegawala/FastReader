@@ -51,6 +51,6 @@ public class Fragment extends ListFragment
     {
         super.onListItemClick(l, v, position, id);
 
-        jb.fastreader.rsvp.Fragment.openMediaViaIntent(getFragmentManager(), this.items.get(position).getMedia());
+        jb.fastreader.rsvp.Fragment.openMedia(getFragmentManager(), this.items.get(position).getMedia());
     }
 }
