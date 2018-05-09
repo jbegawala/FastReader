@@ -17,6 +17,7 @@ import jb.fastreader.rsvp.IRSVPMedia;
 
 class Item implements Comparable<Item>
 {
+    static final int DUMMMY_ARTICLE_ID = -1;
     private static final String TAG = Item.class.getSimpleName();
     private IRSVPMedia media;
     private int ID;
@@ -36,6 +37,11 @@ class Item implements Comparable<Item>
         this.position = position;
         this.wordCount = wordCount;
         this.date = date;
+    }
+
+    int getID()
+    {
+        return this.ID;
     }
 
     String getTitle()

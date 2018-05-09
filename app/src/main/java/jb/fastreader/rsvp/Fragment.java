@@ -269,17 +269,17 @@ public class Fragment extends android.support.v4.app.Fragment
 
     private void pause()
     {
+        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
         this.core.pause();
         this.updateMetaInfo();
         this.showMetaInfo();
         this.textView.setVisibility(View.INVISIBLE);
         this.showNavButtons();
-        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
     private void play()
     {
-        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         this.hideMetaInfo();
         this.textView.setVisibility(View.VISIBLE);
         this.hideNavButtons();

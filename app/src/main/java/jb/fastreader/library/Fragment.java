@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.Date;
 import java.util.List;
 
 import jb.fastreader.FastReader;
@@ -41,7 +42,13 @@ public class Fragment extends ListFragment
     private void scanAndLoadMedia()
     {
         List<Item> libraryContents = DatabaseHelper.getInstance(getContext()).loadArticles();
-        this.adapter = new Adapter(getContext(), R.layout.library_item, libraryContents);
+        int layout = R.layout.library_item;
+        if ( libraryContents.isEmpty() )
+        {
+            layout = R.layout.library_item_empty;
+            libraryContents.add(new Item(Item.DUMMMY_ARTICLE_ID, "", "", "", 0, 0, new Date()));
+        }
+        this.adapter = new Adapter(getContext(), layout, libraryContents);
         super.setListAdapter(this.adapter);
         this.items = libraryContents;
     }
@@ -51,6 +58,10 @@ public class Fragment extends ListFragment
     {
         super.onListItemClick(l, v, position, id);
 
-        jb.fastreader.rsvp.Fragment.openMedia(getFragmentManager(), this.items.get(position).getMedia());
+        Item item = this.items.get(position);
+        if ( item.getID() != Item.DUMMMY_ARTICLE_ID )
+        {
+            jb.fastreader.rsvp.Fragment.openMedia(getFragmentManager(), item.getMedia());
+        }
     }
 }

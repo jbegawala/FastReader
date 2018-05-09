@@ -35,4 +35,6 @@
     <string name="action_open_extract">Open extract</string>
     <string name="action_open_processed">Open processed</string>
     <string name="missing_article_title">Untitled</string>
+    <string name="no_articles">No articles yet!</string>
+    <string name="share_article_to_begin">Share a web article to FastReader to begin.</string>
 </resources>
