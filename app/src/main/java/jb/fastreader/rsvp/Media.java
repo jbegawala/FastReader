@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import jb.fastreader.Settings;
 import jb.fastreader.library.DatabaseHelper;
@@ -149,25 +150,40 @@ abstract class Media implements IRSVPMedia
         String[] words;
         String tmp;
         String[] words2;
+        Pattern splitJoinedWords1 = Pattern.compile("([" + GROUPING_OPEN_CHARS + "]*[^" + GROUPING_OPEN_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + GROUPING_CLOSE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*[" + END_OF_SENTENCE_CHARS_NO_PERIOD +"]+[" + GROUPING_CLOSE_CHARS + "]*)" +
+                "([" + GROUPING_OPEN_CHARS + "]*[^" + GROUPING_OPEN_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + GROUPING_CLOSE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*)");
+
+        Pattern removeGrouping = Pattern.compile("[" + GROUPING_OPEN_CHARS + "]*([^" + GROUPING_OPEN_CHARS + GROUPING_CLOSE_CHARS + "]+)[" + GROUPING_CLOSE_CHARS + "]*");
+
+        Pattern endOfSentence = Pattern.compile("([" + END_OF_SENTENCE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*)");
+
+        Pattern splitJoinedWords2 = Pattern.compile("([a-z0-9]+)([A-Z][a-z0-9]+)");
+
+        Pattern numberUpperCase = Pattern.compile("[^A-Z]?[0-9]+\\.[0-9]+%?");
+
+        Pattern initialUpperCase = Pattern.compile("[A-Z]\\.");
+
         for ( int i = 0; i < paragraphs.length; i++ )
         {
             words = paragraphs[i].trim().split(" +");
             for ( int j = 0; j < words.length; j++ )
             {
-                words2 = words[j].replaceAll("([" + GROUPING_OPEN_CHARS + "]*[^" + GROUPING_OPEN_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + GROUPING_CLOSE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*[" + END_OF_SENTENCE_CHARS_NO_PERIOD +"]+[" + GROUPING_CLOSE_CHARS + "]*)" +
-                        "([" + GROUPING_OPEN_CHARS + "]*[^" + GROUPING_OPEN_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + GROUPING_CLOSE_CHARS + "]+[" + GROUPING_CLOSE_CHARS + "]*)", "$1 $2").trim().split(" ");
+                words2 = splitJoinedWords1.matcher(words[j]).replaceAll("$1 $2").trim().split(" ");
 
                 for ( int k = 0; k < words2.length; k++ )
                 {
-                    tmp = words2[k].replaceAll("[" + GROUPING_OPEN_CHARS + "]*([^" + GROUPING_OPEN_CHARS + GROUPING_CLOSE_CHARS + "]+)[" + GROUPING_CLOSE_CHARS + "]*", "$1").toUpperCase();
-                    if ( noSplitList.contains(tmp) || tmp.matches(".*[0-9]+\\.[0-9]+") )
+                    tmp = removeGrouping.matcher(words2[k]).replaceAll("$1").toUpperCase();
+                    if ( initialUpperCase.matcher(tmp).matches() || noSplitList.contains(tmp) || numberUpperCase.matcher(tmp).matches() )
                     {
                         builder.append(words2[k]).append(" ");
                     }
                     else
                     {
-                        // Label end of sentence and infer two words accidentally joined together
-                        builder.append(words2[k].replaceAll("([" + END_OF_SENTENCE_CHARS + "]+)", "$1" + SENTENCE_MARKER).replaceAll("([a-z0-9]+)([A-Z][a-z0-9]+)","$1 $2")).append(" ");
+                        // Label end of sentence
+                        tmp = endOfSentence.matcher(words2[k]).replaceAll("$1" + SENTENCE_MARKER);
+
+                        // Infer two words accidentally joined together
+                        builder.append(splitJoinedWords2.matcher(tmp).replaceAll("$1 $2")).append(" ");
                     }
                 }
             }
@@ -189,12 +205,15 @@ abstract class Media implements IRSVPMedia
         text = text.trim().replaceAll(" +", " ");                       // remove extra spaces
         text = text.replaceAll(" ?[\\r\\n]+", Character.toString(PARAGRAPH_MARKER));  // clean up and label end of paragraph
 
-        text = text.replaceAll("([^ ])([" + GROUPING_OPEN_CHARS + "])","$1 $2");
-        text = text.replaceAll("([" + GROUPING_OPEN_CHARS + "]) ([A-Za-z0-9])","$1$2");                    // Remove extra spaces (split from below because grouping could enclose multiple sentences)
-        text = text.replaceAll("([A-Za-z0-9]) ([" + GROUPING_CLOSE_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + "])","$1$2");
-        text = text.replaceAll("([" + GROUPING_CLOSE_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + "–—])+([A-Za-z0-9])","$1 $2");   // make sure there is a space after punctuation
+        text = text.replaceAll("([" + GROUPING_OPEN_CHARS + "]) +([" + GROUPING_OPEN_CHARS + "])","$1$2");    // Collapse adjacent grouping characters
+        text = text.replaceAll("([" + GROUPING_CLOSE_CHARS + "]) +([" + GROUPING_CLOSE_CHARS + "])","$1$2");  // Collapse adjacent grouping characters
+        text = text.replaceAll("([^ ])([" + GROUPING_OPEN_CHARS + "]+)","$1 $2");
+        text = text.replaceAll("([" + GROUPING_OPEN_CHARS + "]) +","$1");                    // Remove extra spaces (split from below because grouping could enclose multiple sentences)
+        text = text.replaceAll(" +([" + GROUPING_CLOSE_CHARS + END_OF_SENTENCE_CHARS + "/,])","$1");
+        text = text.replaceAll("([" + GROUPING_CLOSE_CHARS + END_OF_SENTENCE_CHARS_NO_PERIOD + "–—])([A-Za-z0-9])","$1 $2");   // make sure there is a space after punctuation
         text = text.replaceAll("([A-Za-z" + GROUPING_CLOSE_CHARS + "]) ?, ?([A-Za-z0-9" + GROUPING_OPEN_CHARS + "])", "$1, $2");
         text = text.replaceAll("([0-9" + GROUPING_CLOSE_CHARS + "]),([A-Za-z" + GROUPING_OPEN_CHARS + "])", "$1, $2");
+        text = text.replaceAll("[/]([a-zA-Z])","/ $1");
 
         return text;
     }
@@ -207,6 +226,11 @@ abstract class Media implements IRSVPMedia
     {
         ArrayList<String> list = new ArrayList<>(1);
         list.add("U.S.");
+        list.add("U.S.A.");
+        list.add("A.M.");
+        list.add("P.M.");
+        list.add("A.C.");
+        list.add("D.C.");
         list.add("PROF.");
         list.add("DR.");
         list.add("MR.");
@@ -221,6 +245,17 @@ abstract class Media implements IRSVPMedia
         list.add("LTD.");
         list.add("R.S.V.P.");
         list.add("YOUTUBE");
+        list.add("JAN.");
+        list.add("FEB.");
+        list.add("MAR.");
+        list.add("APR.");
+        list.add("JUN.");
+        list.add("JUL.");
+        list.add("AUG.");
+        list.add("SEP.");
+        list.add("OCT.");
+        list.add("NOV.");
+        list.add("DEC.");
         return list;
     }
 

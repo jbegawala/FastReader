@@ -1,35 +1,18 @@
-# Glance-Android
+# FastReader
 
-![Glance](http://i.imgur.com/pO9as8z.gif)
+![FastReader](https://i.imgur.com/bzR0Oz1.gif)
 
-Glance is a [RSVP](http://en.wikipedia.org/wiki/Rapid_serial_visual_presentation) reader for Android 4.0.4+ (API 15). Glance also includes a curated collection of feeds for your reading pleasure thanks to work by [Rich Jones](https://github.com/miserlou). The Glance reading collection is also available at [glance.wtf](http://glance.wtf), because silly TLDs are great.
+FastReader is a rapid serial visual presentation [RSVP](http://en.wikipedia.org/wiki/Rapid_serial_visual_presentation) speed reader for Android 7.1+ (API 25). I forked this from [Glance-Android](https://github.com/OnlyInAmerica/GlanceReader) to learn about Android and ended up rewriting the whole app. This is my first mobile app and I actually use it on a daily basis.
 
-You can share URLs to Glance from your favorite web browser, or open .epubs on your device's external storage directly.
-
-Available on Google Play under the name **Glance**
-
-## Lend a hand
-
-Some quick, incomplete thoughts on what's next.
-
-#### Enhancements
-
-+ Find some nice monospace fonts
-+ More sophisticated pivot choosing
-+ Better handle "Chapters" with epublib, or some other epub library
-    + This seems unreasonably hard.
-
-#### Features
-
-+ Read text from clipboard
+Share URLs to FastReader from any application.
 
 ## Building
 
 0. Make sure you've installed the following from the Android SDK Manager before building:
-  	+ Android SDK Build-tools 19.0.2
-	+ Android SDK tools 22.3
-	+ SDK Platform 19
-	+ Android Support Repository 4
+  	+ Android SDK Build-tools 26.0.1
+	+ Android SDK tools 26.0
+	+ SDK Platform 25
+	+ Android Support Repository 47
 
 1. Define the `ANDROID_HOME` environmental variable as your Android SDK location.
 
@@ -45,14 +28,14 @@ Some quick, incomplete thoughts on what's next.
 
 
 ## Thanks
-In no partiular order. Thanks everybody!
+Thanks to all the Glance contributors!
 
-+ [Rich Jones](https://github.com/miserlou) for adding the curated feeds & community features.
-+ [andrewgiang](https://github.com/andrewgiang) for contributing a re-usable library based on the early project, and other contributions
-+ [defer](https://github.com/defer) for refactoring that made it easier to support multiple formats
-+ [epublib](https://github.com/psiegman/epublib) by [psiegman](https://github.com/psiegman) (LGPL)
-+ [rcarlsen](https://github.com/rcarlsen) for work adopting for Glass
-+ [mneimsky](https://github.com/mneimsky) for work adopting for Glass
++ [Rich Jones](https://github.com/miserlou)
++ [andrewgiang](https://github.com/andrewgiang)
++ [defer](https://github.com/defer)
++ [psiegman](https://github.com/psiegman) (LGPL)
++ [rcarlsen](https://github.com/rcarlsen)
++ [mneimsky](https://github.com/mneimsky)
 
 ## License
 

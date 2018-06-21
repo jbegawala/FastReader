@@ -3,6 +3,7 @@ package jb.fastreader.rsvp;
 import android.util.Log;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by Junaid Begawala on 3/21/18.
@@ -66,11 +67,9 @@ class Word implements Serializable
      */
     private static String[] splitLongWord(String word)
     {
-        String[] wordSegments = new String[(word.length()/maxWordLength)+1];
+        ArrayList<String> wordSegments = new ArrayList<>(3);
 
         int splitIndex;
-        int piece = 0;
-
         for ( int i = 0; i < word.length(); i = splitIndex)
         {
             splitIndex = findSplitIndex(word, i);
@@ -81,19 +80,15 @@ class Word implements Serializable
             }
             if ( !segment.isEmpty())
             {
-                wordSegments[piece++] = segment;
+                wordSegments.add(segment);
             }
         }
-        if ( piece > 0 && piece != wordSegments.length )
+        String[] wordSegmentAray = new String[wordSegments.size()];
+        for ( int i = 0; i < wordSegments.size(); i++ )
         {
-            String [] wordSegments2 = new String[piece];
-            for ( int i = 0; i < piece; i++ )
-            {
-                wordSegments2[i] = wordSegments[i];
-            }
-            return wordSegments2;
+            wordSegmentAray[i] = wordSegments.get(i);
         }
-        return wordSegments;
+        return wordSegmentAray;
     }
 
     /**
